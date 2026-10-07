@@ -269,7 +269,7 @@
                                 <i class="fa-solid fa-wallet"></i>
                             </div>
                         </div>
-                        <h2 class="text-2xl md:text-3xl font-extrabold text-main mb-2">৳<span id="metricBalance">0</span></h2>
+                        <h2 class="text-2xl md:text-3xl font-extrabold text-main mb-2 metric-value">৳<span id="metricBalance">0</span></h2>
                         <div class="flex items-center gap-1.5 text-xs font-semibold">
                             <span id="trendBalance" class="px-2 py-0.5 rounded-lg flex items-center gap-1"></span>
                             <span class="text-muted font-normal">vs last month</span>
@@ -284,7 +284,7 @@
                                 <i class="fa-solid fa-arrow-down-left text-lg"></i>
                             </div>
                         </div>
-                        <h2 class="text-2xl md:text-3xl font-extrabold text-main mb-2">৳<span id="metricIncome">0</span></h2>
+                        <h2 class="text-2xl md:text-3xl font-extrabold text-main mb-2 metric-value">৳<span id="metricIncome">0</span></h2>
                         <div class="flex items-center gap-1.5 text-xs font-semibold">
                             <span id="trendIncome" class="px-2 py-0.5 rounded-lg flex items-center gap-1"></span>
                             <span class="text-muted font-normal">vs last month</span>
@@ -299,7 +299,7 @@
                                 <i class="fa-solid fa-arrow-up-right text-lg"></i>
                             </div>
                         </div>
-                        <h2 class="text-2xl md:text-3xl font-extrabold text-main mb-2">৳<span id="metricExpenses">0</span></h2>
+                        <h2 class="text-2xl md:text-3xl font-extrabold text-main mb-2 metric-value">৳<span id="metricExpenses">0</span></h2>
                         <div class="flex items-center gap-1.5 text-xs font-semibold">
                             <span id="trendExpenses" class="px-2 py-0.5 rounded-lg flex items-center gap-1"></span>
                             <span class="text-muted font-normal">vs last month</span>
@@ -314,7 +314,7 @@
                                 <i class="fa-solid fa-piggy-bank"></i>
                             </div>
                         </div>
-                        <h2 class="text-2xl md:text-3xl font-extrabold text-main mb-2"><span id="metricSavings">0</span>%</h2>
+                        <h2 class="text-2xl md:text-3xl font-extrabold text-main mb-2 metric-value"><span id="metricSavings">0</span>%</h2>
                         <div class="flex items-center gap-1.5 text-xs font-semibold text-accent-500">
                             <span id="trendSavings" class="bg-accent-500/10 px-2 py-0.5 rounded-lg flex items-center gap-1"></span>
                         </div>
@@ -458,6 +458,28 @@
                     </select>
                 </div>
 
+                <!-- Secondary Filter Row: Date Range + Amount Range -->
+                <div class="bg-card p-4 rounded-2xl border border-theme shadow-sm grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                    <!-- Date Range Preset -->
+                    <select id="txDateRangeFilter" class="bg-input rounded-xl px-3 py-2 text-xs text-main border border-transparent focus:border-brand-500 focus:outline-none font-semibold">
+                        <option value="ALL">All Dates</option>
+                        <option value="today">Today</option>
+                        <option value="week">This Week</option>
+                        <option value="month">This Month</option>
+                        <option value="custom">Custom Range</option>
+                    </select>
+                    <!-- Custom Date Range Inputs (shown only when "Custom Range" is selected) -->
+                    <div id="txCustomDateRange" class="hidden grid grid-cols-2 gap-3 sm:col-span-1 lg:col-span-2">
+                        <input type="date" id="txDateFrom" class="bg-input rounded-xl px-3 py-2 text-xs text-main border border-transparent focus:border-brand-500 focus:outline-none">
+                        <input type="date" id="txDateTo" class="bg-input rounded-xl px-3 py-2 text-xs text-main border border-transparent focus:border-brand-500 focus:outline-none">
+                    </div>
+                    <!-- Amount Range -->
+                    <div class="grid grid-cols-2 gap-3">
+                        <input type="number" id="txMinAmount" min="0" step="0.01" placeholder="Min ৳" class="bg-input rounded-xl px-3 py-2 text-xs text-main border border-transparent focus:border-brand-500 focus:outline-none">
+                        <input type="number" id="txMaxAmount" min="0" step="0.01" placeholder="Max ৳" class="bg-input rounded-xl px-3 py-2 text-xs text-main border border-transparent focus:border-brand-500 focus:outline-none">
+                    </div>
+                </div>
+
                 <!-- Transactions Main Data Table & Cards -->
                 <div class="bg-card rounded-2xl border border-theme shadow-sm overflow-hidden">
                     <!-- Desktop Table View -->
@@ -495,6 +517,15 @@
                             + Add Transaction
                         </button>
                     </div>
+
+                    <!-- Pagination -->
+                    <div id="txPagination" class="hidden flex items-center justify-between p-4 border-t border-theme text-xs">
+                        <span id="txPaginationInfo" class="text-muted"></span>
+                        <div class="flex items-center gap-2">
+                            <button id="txPrevPageBtn" class="px-3 py-1.5 rounded-lg bg-input text-main font-semibold disabled:opacity-40 disabled:cursor-not-allowed">Prev</button>
+                            <button id="txNextPageBtn" class="px-3 py-1.5 rounded-lg bg-input text-main font-semibold disabled:opacity-40 disabled:cursor-not-allowed">Next</button>
+                        </div>
+                    </div>
                 </div>
             </section>
 
@@ -504,7 +535,7 @@
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div>
                         <h1 class="text-2xl font-extrabold text-main">Budget Management</h1>
-                        <p class="text-xs md:text-sm text-muted">Set target monthly limits and avoid overspending.</p>
+                        <p class="text-xs md:text-sm text-muted">Set spending limits for any date range and avoid overspending.</p>
                     </div>
                     <button onclick="openBudgetModal()" class="btn-primary bg-brand-500 hover:bg-brand-600 text-white font-semibold px-4 py-2.5 rounded-xl flex items-center gap-2 text-sm shadow-md shadow-brand-500/20 self-start">
                         <i class="fa-solid fa-plus"></i>
@@ -516,8 +547,9 @@
                 <div class="bg-gradient-to-r from-brand-600 to-accent-600 rounded-2xl p-6 text-white shadow-lg space-y-4">
                     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/20 pb-4">
                         <div>
-                            <span class="text-xs uppercase font-bold tracking-wider opacity-80">Monthly Overall Budget</span>
-                            <h2 class="text-3xl font-extrabold">৳<span id="bgTotalSpent">22,500</span> / ৳<span id="bgTotalLimit">30,000</span></h2>
+                            <span class="text-xs uppercase font-bold tracking-wider opacity-80">Active Budgets Overview</span>
+                            <h2 class="text-3xl font-extrabold">৳<span id="bgTotalSpent">0</span> / ৳<span id="bgTotalLimit">0</span></h2>
+                            <span class="text-[11px] opacity-80" id="bgActiveCount"></span>
                         </div>
                         <div class="text-right">
                             <span class="text-xs opacity-80">Remaining Budget</span>
@@ -551,7 +583,7 @@
                 </div>
 
                 <!-- Spending Forecast Banner -->
-                <div class="p-5 rounded-2xl bg-gradient-to-r from-accent-500/10 via-brand-500/10 to-transparent border border-accent-500/20 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                <div id="forecastCard" class="p-5 rounded-2xl bg-gradient-to-r from-accent-500/10 via-brand-500/10 to-transparent border border-accent-500/20 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
                     <div class="flex items-center gap-4">
                         <div class="w-12 h-12 rounded-2xl bg-accent-500 text-white flex items-center justify-center text-xl shrink-0 shadow-md shadow-accent-500/20">
                             <i class="fa-solid fa-crystal-ball"></i>
@@ -787,6 +819,12 @@
                     <input type="text" id="txFormDescription" required placeholder="e.g. McDonald's, Uber, Salary" class="w-full bg-input rounded-xl px-3.5 py-2.5 text-xs text-main border border-transparent focus:border-brand-500 focus:outline-none">
                 </div>
 
+                <!-- Notes Input (optional) -->
+                <div>
+                    <label class="block text-xs font-bold text-muted mb-1">Notes</label>
+                    <textarea id="txFormNotes" rows="2" maxlength="500" placeholder="Optional extra detail..." class="w-full bg-input rounded-xl px-3.5 py-2.5 text-xs text-main border border-transparent focus:border-brand-500 focus:outline-none resize-none"></textarea>
+                </div>
+
                 <!-- Buttons -->
                 <div class="flex items-center justify-end gap-3 pt-2">
                     <button type="button" onclick="closeTransactionModal()" class="px-4 py-2 rounded-xl text-xs font-semibold text-muted hover:bg-slate-100 dark:hover:bg-slate-800">Cancel</button>
@@ -831,8 +869,18 @@
                 </select>
             </div>
             <div>
-                <label class="block text-xs font-bold text-muted mb-1">Monthly Limit (৳) *</label>
+                <label class="block text-xs font-bold text-muted mb-1">Budget Limit (৳) *</label>
                 <input type="number" id="budgetFormLimit" step="0.01" min="0.01" required placeholder="10000" class="w-full bg-input rounded-xl px-3.5 py-2.5 text-sm text-main font-bold border border-transparent focus:border-brand-500 focus:outline-none">
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <label class="block text-xs font-bold text-muted mb-1">Start Date *</label>
+                    <input type="date" id="budgetFormStartDate" required class="w-full bg-input rounded-xl px-3.5 py-2.5 text-xs text-main border border-transparent focus:border-brand-500 focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-muted mb-1">End Date *</label>
+                    <input type="date" id="budgetFormEndDate" required class="w-full bg-input rounded-xl px-3.5 py-2.5 text-xs text-main border border-transparent focus:border-brand-500 focus:outline-none">
+                </div>
             </div>
             <div class="flex justify-end gap-2">
                 <button type="button" onclick="closeBudgetModal()" class="px-4 py-2 rounded-xl text-xs font-semibold text-muted">Cancel</button>
@@ -967,23 +1015,85 @@
         }
 
         // GLOBAL DATA STATE — filled from the API (PostgreSQL is the single source of truth).
-        let transactions = [];      // current (filtered) list shown on the Transactions page
+        let transactions = [];      // current page of transactions shown on the Transactions page
         let recentTransactions = []; // latest 5 for the dashboard
-        let categoryBudgets = [];   // budgets for the current month, with spent/remaining calculated by the API
+        let categoryBudgets = [];   // every budget the user has, with spent/remaining calculated by the API
         let savingsGoals = [];
 
-        // Debounce so typing in the search box doesn't fire a request per keystroke
+        // ----- Loading / error state helpers (shared by every page's initial load) -----
+        // "Loading" is visually distinct from "no data yet" (Rule 4): a pulsing skeleton,
+        // not a blank area or a stale zero.
+        const skeletonTableRows = (cols, rows = 5) => Array.from({ length: rows }).map(() =>
+            `<tr>${Array.from({ length: cols }).map(() => '<td class="p-4"><div class="h-3 bg-input rounded animate-pulse"></div></td>').join('')}</tr>`
+        ).join('');
+
+        const skeletonCards = (count, heightClass) => Array.from({ length: count }).map(() =>
+            `<div class="animate-pulse bg-input rounded-2xl ${heightClass}"></div>`
+        ).join('');
+
+        // A retry block for when a page's initial data load fails outright (not a mutation -
+        // those already get a toast). `retryFnName` is called by name since this is injected as HTML.
+        const errorRetryBlock = (message, retryFnName) => `
+            <div class="text-center py-8 space-y-3 col-span-full">
+                <p class="text-xs text-muted">${escapeHtml(message)}</p>
+                <button onclick="${retryFnName}()" class="btn-primary bg-brand-500 text-white px-4 py-2 rounded-xl text-xs font-semibold">Try Again</button>
+            </div>
+        `;
+
+        // ----- Transactions: search / filter / sort / date range / amount range / pagination -----
+        let txCurrentPage = 1;
+        let txPaginationState = { page: 1, limit: 20, total: 0, totalPages: 1 };
+
+        // Debounce so typing in the search box (or amount filters) doesn't fire a request per keystroke.
         let txSearchTimer = null;
-        function debouncedLoadTransactions() {
+        function debouncedReloadTransactions() {
             clearTimeout(txSearchTimer);
-            txSearchTimer = setTimeout(loadTransactions, 250);
+            txSearchTimer = setTimeout(() => { txCurrentPage = 1; loadTransactions(); }, 250);
+        }
+        // Any non-page filter change (type/category/sort/date range) goes back to page 1.
+        function reloadTransactionsFromStart() {
+            txCurrentPage = 1;
+            loadTransactions();
+        }
+
+        // Turns the date-range preset into concrete dateFrom/dateTo query values.
+        function resolveDateRangeFilter(preset) {
+            const today = new Date();
+            if (preset === 'today') {
+                return { dateFrom: isoToday(), dateTo: isoToday() };
+            }
+            if (preset === 'week') {
+                const day = today.getDay(); // 0=Sun..6=Sat
+                const monday = new Date(today);
+                monday.setDate(today.getDate() + (day === 0 ? -6 : 1 - day));
+                return { dateFrom: toIsoDate(monday), dateTo: isoToday() };
+            }
+            if (preset === 'month') {
+                const first = new Date(today.getFullYear(), today.getMonth(), 1);
+                return { dateFrom: toIsoDate(first), dateTo: isoLastDayOfMonth() };
+            }
+            if (preset === 'custom') {
+                return {
+                    dateFrom: document.getElementById('txDateFrom').value || undefined,
+                    dateTo: document.getElementById('txDateTo').value || undefined,
+                };
+            }
+            return {};
         }
 
         async function loadTransactions() {
+            const tableBody = document.getElementById('fullTransactionsTableBody');
+            const mobileCards = document.getElementById('transactionsMobileCards');
+            document.getElementById('txEmptyState').classList.add('hidden');
+            document.getElementById('txPagination').classList.add('hidden');
+            tableBody.innerHTML = skeletonTableRows(6);
+            mobileCards.innerHTML = skeletonCards(4, 'h-16');
+
             try {
                 const params = new URLSearchParams({
                     sort: document.getElementById('txSortFilter').value,
-                    limit: 500
+                    page: txCurrentPage,
+                    limit: txPaginationState.limit,
                 });
                 const search = document.getElementById('txSearchInput').value.trim();
                 const type = document.getElementById('txTypeFilter').value;
@@ -992,45 +1102,93 @@
                 if (type !== 'ALL') params.set('type', type);
                 if (category !== 'ALL') params.set('category', category);
 
+                const { dateFrom, dateTo } = resolveDateRangeFilter(document.getElementById('txDateRangeFilter').value);
+                if (dateFrom) params.set('dateFrom', dateFrom);
+                if (dateTo) params.set('dateTo', dateTo);
+
+                const minAmount = document.getElementById('txMinAmount').value;
+                const maxAmount = document.getElementById('txMaxAmount').value;
+                if (minAmount) params.set('minAmount', minAmount);
+                if (maxAmount) params.set('maxAmount', maxAmount);
+
                 const json = await api(`/transactions?${params}`);
                 transactions = json.data.transactions;
+                txPaginationState = json.data.pagination;
                 renderTransactions();
-            } catch (err) { showToast(err.message, 'error'); }
+                renderTransactionsPagination();
+            } catch (err) {
+                tableBody.innerHTML = `<tr><td colspan="6">${errorRetryBlock(err.message, 'loadTransactions')}</td></tr>`;
+                mobileCards.innerHTML = errorRetryBlock(err.message, 'loadTransactions');
+                showToast(err.message, 'error');
+            }
+        }
+
+        function renderTransactionsPagination() {
+            const bar = document.getElementById('txPagination');
+            const { page, limit, total, totalPages } = txPaginationState;
+            if (total === 0) { bar.classList.add('hidden'); return; }
+            bar.classList.remove('hidden');
+            const startItem = (page - 1) * limit + 1;
+            const endItem = Math.min(page * limit, total);
+            document.getElementById('txPaginationInfo').innerText = `Showing ${startItem}–${endItem} of ${total}`;
+            document.getElementById('txPrevPageBtn').disabled = page <= 1;
+            document.getElementById('txNextPageBtn').disabled = page >= totalPages;
         }
 
         async function loadBudgets() {
+            const grid = document.getElementById('categoryBudgetsGrid');
+            grid.innerHTML = skeletonCards(3, 'h-40');
             try {
                 const json = await api('/budgets/summary');
                 categoryBudgets = json.data.budgets;
                 renderBudgets(json.data);
                 renderSmartInsights();
-            } catch (err) { showToast(err.message, 'error'); }
+            } catch (err) {
+                grid.innerHTML = errorRetryBlock(err.message, 'loadBudgets');
+                showToast(err.message, 'error');
+            }
         }
 
         async function loadGoals() {
+            const grid = document.getElementById('savingsGoalsGrid');
+            grid.innerHTML = skeletonCards(3, 'h-48');
             try {
                 const json = await api('/goals');
                 savingsGoals = json.data.goals;
                 renderSavingsGoals();
                 renderSmartInsights();
-            } catch (err) { showToast(err.message, 'error'); }
+            } catch (err) {
+                grid.innerHTML = errorRetryBlock(err.message, 'loadGoals');
+                showToast(err.message, 'error');
+            }
         }
 
         // GET /api/dashboard - one call powers the summary cards, both charts,
         // the recent transactions widget and (together with budgets/goals) Smart Insights.
         let dashboardData = null;
         async function loadDashboard() {
+            const recentBody = document.getElementById('recentTransactionsTableBody');
+            recentBody.innerHTML = skeletonTableRows(4, 3);
+            document.querySelectorAll('.metric-value').forEach((el) => el.classList.add('animate-pulse'));
+
             try {
                 const period = document.getElementById('dashboardPeriodSelect').value;
                 const json = await api(`/dashboard?period=${period}`);
                 dashboardData = json.data;
                 recentTransactions = json.data.recentTransactions;
                 renderDashboard();
-            } catch (err) { showToast(err.message, 'error'); }
+            } catch (err) {
+                recentBody.innerHTML = `<tr><td colspan="4">${errorRetryBlock(err.message, 'loadDashboard')}</td></tr>`;
+                showToast(err.message, 'error');
+            } finally {
+                document.querySelectorAll('.metric-value').forEach((el) => el.classList.remove('animate-pulse'));
+            }
         }
 
         // Analytics page: trailing monthly trend + spending forecast
         async function loadAnalytics() {
+            const forecastCard = document.getElementById('forecastCard');
+            if (forecastCard) forecastCard.classList.add('animate-pulse');
             try {
                 const [monthlyRes, forecastRes] = await Promise.all([
                     api('/analytics/monthly'),
@@ -1038,19 +1196,32 @@
                 ]);
                 updateIncomeExpenseChart(monthlyRes.data);
                 renderForecast(forecastRes.data);
-            } catch (err) { showToast(err.message, 'error'); }
+            } catch (err) {
+                showToast(err.message, 'error');
+            } finally {
+                if (forecastCard) forecastCard.classList.remove('animate-pulse');
+            }
         }
 
         // Notification bell
         let notifications = [];
         let unreadCount = 0;
+        let notificationsLoadedOnce = false;
         async function loadNotifications() {
+            if (!notificationsLoadedOnce) {
+                document.getElementById('notificationList').innerHTML = skeletonCards(3, 'h-14');
+            }
             try {
                 const json = await api('/notifications');
                 notifications = json.data.notifications;
                 unreadCount = json.data.unreadCount;
+                notificationsLoadedOnce = true;
                 renderNotifications();
-            } catch (err) { showToast(err.message, 'error'); }
+            } catch (err) {
+                if (!notificationsLoadedOnce) {
+                    document.getElementById('notificationList').innerHTML = errorRetryBlock(err.message, 'loadNotifications');
+                }
+            }
         }
 
         async function markNotificationRead(id) {
@@ -1069,7 +1240,9 @@
 
         // Anything that changes transactions also changes budgets, the dashboard, analytics
         // (forecast/monthly trend) and can trigger a budget notification, so refresh all together.
+        // Goes back to page 1 too - the page the user was on may no longer exist after a delete.
         function refreshFinanceData() {
+            txCurrentPage = 1;
             return Promise.all([loadTransactions(), loadDashboard(), loadBudgets(), loadAnalytics(), loadNotifications()]);
         }
 
@@ -1096,11 +1269,26 @@
             document.getElementById('budgetForm').addEventListener('submit', handleBudgetFormSubmit);
             document.getElementById('goalForm').addEventListener('submit', handleGoalFormSubmit);
 
-            // Global Filter Listeners (filtering/sorting/searching is done by the API)
-            document.getElementById('txSearchInput').addEventListener('input', debouncedLoadTransactions);
-            document.getElementById('txTypeFilter').addEventListener('change', loadTransactions);
-            document.getElementById('txCategoryFilter').addEventListener('change', loadTransactions);
-            document.getElementById('txSortFilter').addEventListener('change', loadTransactions);
+            // Global Filter Listeners (filtering/sorting/searching is done by the API).
+            // Any filter change goes back to page 1 - staying on page 3 of a now-different result set would be confusing.
+            document.getElementById('txSearchInput').addEventListener('input', debouncedReloadTransactions);
+            document.getElementById('txTypeFilter').addEventListener('change', reloadTransactionsFromStart);
+            document.getElementById('txCategoryFilter').addEventListener('change', reloadTransactionsFromStart);
+            document.getElementById('txSortFilter').addEventListener('change', reloadTransactionsFromStart);
+            document.getElementById('txMinAmount').addEventListener('input', debouncedReloadTransactions);
+            document.getElementById('txMaxAmount').addEventListener('input', debouncedReloadTransactions);
+            document.getElementById('txDateFrom').addEventListener('change', reloadTransactionsFromStart);
+            document.getElementById('txDateTo').addEventListener('change', reloadTransactionsFromStart);
+            document.getElementById('txDateRangeFilter').addEventListener('change', (e) => {
+                document.getElementById('txCustomDateRange').classList.toggle('hidden', e.target.value !== 'custom');
+                reloadTransactionsFromStart();
+            });
+            document.getElementById('txPrevPageBtn').addEventListener('click', () => {
+                if (txCurrentPage > 1) { txCurrentPage -= 1; loadTransactions(); }
+            });
+            document.getElementById('txNextPageBtn').addEventListener('click', () => {
+                if (txCurrentPage < txPaginationState.totalPages) { txCurrentPage += 1; loadTransactions(); }
+            });
 
             // Dashboard period selector (This Month / Last Month / Year) reloads the summary
             document.getElementById('dashboardPeriodSelect').addEventListener('change', loadDashboard);
@@ -1425,7 +1613,10 @@
                 row.className = "hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all-200";
                 row.innerHTML = `
                     <td class="p-4 text-muted">${tx.date}</td>
-                    <td class="p-4 font-bold text-main">${escapeHtml(tx.description)}</td>
+                    <td class="p-4 font-bold text-main">
+                        ${escapeHtml(tx.description)}
+                        ${tx.notes ? `<i class="fa-solid fa-note-sticky text-[10px] text-muted ml-1" title="${escapeHtml(tx.notes)}"></i>` : ''}
+                    </td>
                     <td class="p-4"><span class="bg-input px-2.5 py-1 rounded-xl text-xs font-semibold text-muted">${escapeHtml(tx.category)}</span></td>
                     <td class="p-4">
                         <span class="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold ${isIncome ? 'bg-emerald-500/10 text-emerald-500' : 'bg-rose-500/10 text-rose-500'}">
@@ -1457,7 +1648,7 @@
                             <i class="fa-solid ${isIncome ? 'fa-arrow-down' : 'fa-arrow-up'}"></i>
                         </div>
                         <div>
-                            <p class="font-bold text-xs text-main">${escapeHtml(tx.description)}</p>
+                            <p class="font-bold text-xs text-main">${escapeHtml(tx.description)}${tx.notes ? ` <i class="fa-solid fa-note-sticky text-[9px] text-muted" title="${escapeHtml(tx.notes)}"></i>` : ''}</p>
                             <p class="text-[10px] text-muted">${escapeHtml(tx.category)} • ${tx.date}</p>
                         </div>
                     </div>
@@ -1509,6 +1700,7 @@
             document.getElementById('txFormCategory').value = tx.category;
             document.getElementById('txFormDate').value = tx.date;
             document.getElementById('txFormDescription').value = tx.description;
+            document.getElementById('txFormNotes').value = tx.notes || '';
             setTxFormType(tx.type);
             document.getElementById('txModal').classList.remove('hidden');
         }
@@ -1521,7 +1713,8 @@
                 amount: parseFloat(document.getElementById('txFormAmount').value),
                 category: document.getElementById('txFormCategory').value,
                 date: document.getElementById('txFormDate').value,
-                description: document.getElementById('txFormDescription').value.trim()
+                description: document.getElementById('txFormDescription').value.trim(),
+                notes: document.getElementById('txFormNotes').value.trim()
             };
 
             if(!payload.amount || !payload.description) {
@@ -1551,13 +1744,26 @@
 
         const fmt = (n) => Number(n).toLocaleString();
 
+        // Local-date (not UTC) YYYY-MM-DD helpers, for <input type="date"> defaults.
+        const toIsoDate = (d) => {
+            const yyyy = d.getFullYear();
+            const mm = String(d.getMonth() + 1).padStart(2, '0');
+            const dd = String(d.getDate()).padStart(2, '0');
+            return `${yyyy}-${mm}-${dd}`;
+        };
+        const isoToday = () => toIsoDate(new Date());
+        const isoLastDayOfMonth = () => {
+            const d = new Date();
+            return toIsoDate(new Date(d.getFullYear(), d.getMonth() + 1, 0));
+        };
+
         function renderBudgets(summary) {
             const grid = document.getElementById('categoryBudgetsGrid');
             const momList = document.getElementById('momVarianceList');
             grid.innerHTML = '';
             if(momList) momList.innerHTML = '';
 
-            // Overall monthly card (totals come from the API)
+            // Active Budgets Overview card (totals come from the API, active budgets only)
             if(summary) {
                 const pct = summary.percentage;
                 document.getElementById('bgTotalSpent').innerText = fmt(summary.totalSpent);
@@ -1566,12 +1772,21 @@
                 document.getElementById('bgUsedPct').innerText = `${pct}% Used`;
                 document.getElementById('bgRemainingPct').innerText = `${Math.max(100 - pct, 0)}% Remaining`;
                 document.getElementById('bgTotalBar').style.width = `${Math.min(pct, 100)}%`;
+                document.getElementById('bgActiveCount').innerText =
+                    `${summary.activeCount} active of ${summary.totalCount} total budget${summary.totalCount === 1 ? '' : 's'}`;
             }
 
             if(categoryBudgets.length === 0) {
-                grid.innerHTML = '<p class="text-xs text-muted col-span-full">No budgets yet. Click "Create Category Budget" to set your first monthly limit.</p>';
+                grid.innerHTML = '<p class="text-xs text-muted col-span-full">No budgets yet. Click "Create Category Budget" to set your first spending limit.</p>';
                 return;
             }
+
+            const STATUS_STYLES = {
+                active: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400',
+                upcoming: 'bg-blue-500/10 text-blue-600 dark:text-blue-400',
+                ended: 'bg-slate-500/10 text-muted',
+            };
+            const STATUS_LABELS = { active: 'Active', upcoming: 'Upcoming', ended: 'Ended' };
 
             categoryBudgets.forEach(b => {
                 const pct = b.percentage;
@@ -1586,7 +1801,10 @@
                             <div class="w-8 h-8 rounded-lg ${isOver ? 'bg-rose-500/10 text-rose-500' : 'bg-brand-500/10 text-brand-500'} flex items-center justify-center font-bold text-xs">
                                 <i class="fa-solid fa-receipt"></i>
                             </div>
-                            <span class="font-bold text-sm text-main">${escapeHtml(b.category)}</span>
+                            <div>
+                                <span class="font-bold text-sm text-main block">${escapeHtml(b.category)}</span>
+                                <span class="text-[10px] px-1.5 py-0.5 rounded font-bold ${STATUS_STYLES[b.status] || ''}">${STATUS_LABELS[b.status] || b.status}</span>
+                            </div>
                         </div>
                         <div class="flex items-center gap-1">
                             <span class="text-xs font-extrabold ${isOver ? 'text-rose-500 bg-rose-500/10' : 'text-muted bg-input'} px-2 py-0.5 rounded-lg">
@@ -1596,6 +1814,7 @@
                             <button onclick="deleteBudget('${b.id}')" class="p-1 text-slate-400 hover:text-rose-500 text-xs"><i class="fa-solid fa-trash-can"></i></button>
                         </div>
                     </div>
+                    <p class="text-[10px] text-muted">${b.startDate} → ${b.endDate}</p>
                     <div class="flex justify-between items-baseline text-xs">
                         <span class="font-extrabold text-main">৳${fmt(b.spent)} <span class="font-normal text-muted">/ ৳${fmt(b.limit)}</span></span>
                         <span class="text-[11px] ${isOver ? 'text-rose-500 font-bold' : 'text-muted'}">
@@ -1632,6 +1851,9 @@
             document.getElementById('budgetFormId').value = b ? b.id : '';
             document.getElementById('budgetFormCategory').value = b ? b.category : 'Food';
             document.getElementById('budgetFormLimit').value = b ? b.limit : '';
+            // Default a new budget to "the rest of this month" - a convenient starting point the user can change.
+            document.getElementById('budgetFormStartDate').value = b ? b.startDate : isoToday();
+            document.getElementById('budgetFormEndDate').value = b ? b.endDate : isoLastDayOfMonth();
             document.getElementById('budgetModal').classList.remove('hidden');
         }
 
@@ -1644,10 +1866,20 @@
             const id = document.getElementById('budgetFormId').value;
             const payload = {
                 category: document.getElementById('budgetFormCategory').value,
-                limit: parseFloat(document.getElementById('budgetFormLimit').value)
+                limit: parseFloat(document.getElementById('budgetFormLimit').value),
+                startDate: document.getElementById('budgetFormStartDate').value,
+                endDate: document.getElementById('budgetFormEndDate').value
             };
             if(!payload.limit || payload.limit <= 0) {
                 showToast("Please enter a limit greater than 0", "error");
+                return;
+            }
+            if(!payload.startDate || !payload.endDate) {
+                showToast("Please choose a start and end date", "error");
+                return;
+            }
+            if(payload.endDate < payload.startDate) {
+                showToast("End date must be on or after the start date", "error");
                 return;
             }
             try {
