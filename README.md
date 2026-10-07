@@ -12,10 +12,15 @@ Frontend (static HTML/JS) → REST API (Express) → Prisma ORM → PostgreSQL
 
 - **Auth** — register/login with bcrypt password hashing, JWT sessions, a
   protected `/api/auth/me`, logout.
-- **Transactions** — full CRUD, with server-side search, type/category
-  filtering, sorting and pagination.
-- **Budgets** — CRUD per category/month. `spent`, `remaining` and
-  `percentage` are always computed live from real transactions, never stored.
+- **Transactions** — full CRUD, with server-side search (description, category
+  *and* notes), type/category filtering, a date-range filter (Today/This
+  Week/This Month/Custom), a min/max amount filter, sorting, and pagination
+  exposed in the UI (Prev/Next, 20 per page).
+- **Budgets** — CRUD with an arbitrary `startDate`/`endDate` per budget (not
+  locked to a calendar month). Overlapping budgets for the same category are
+  rejected (409). `spent`, `remaining` and `percentage` are always computed
+  live from real transactions in that date range, never stored. Each budget
+  carries a computed `status`: `upcoming` / `active` / `ended`.
 - **Savings Goals** — CRUD plus deposits (server-side atomic increment;
   negative/invalid amounts rejected).
 - **Dashboard** (`GET /api/dashboard`) — real income/expense/balance/savings
@@ -25,17 +30,22 @@ Frontend (static HTML/JS) → REST API (Express) → Prisma ORM → PostgreSQL
   month-over-month change, and a spending forecast (daily average projected
   across the month).
 - **Notifications** — generated from real activity, not scheduled fake data:
-  a budget crossing 80% or 100% raises a warning/exceeded alert, a savings
-  goal crossing 50%/100% raises a milestone alert. Each is deduplicated so
-  the same event doesn't spam the bell twice.
+  a budget crossing 80% or 100% raises a warning/exceeded alert (checked both
+  when an expense is added *and* when the budget itself is created/edited),
+  a savings goal crossing 50%/100% raises a milestone alert. Each is
+  deduplicated so the same event doesn't spam the bell twice.
 - Every route above requires a valid JWT and is scoped to `req.user.id` —
   one user can never read or modify another user's data (verified with an
   automated two-user test, see below).
+- **Loading & error states** — every page's initial data load shows a
+  pulsing skeleton (not a blank screen or a stale zero) while it fetches, and
+  a "Try Again" retry block if the request fails outright.
 
 The frontend (`fintrack_application.html`, `login.html`) is your original
 design, unmodified except for replacing every hard-coded array/number with
-API calls, loading/empty states, and the small pieces of UI the mock version
-was missing (a Create/Edit Budget modal, a Create/Edit Goal modal).
+API calls, loading/empty/error states, and the small pieces of UI the mock
+version was missing (Create/Edit Budget and Create/Edit Goal modals, a Notes
+field, date-range/amount filters, pagination controls).
 
 ## Requirements
 
@@ -61,11 +71,12 @@ Edit `backend/.env`:
 | `CLIENT_URL` | Origin the frontend is served from, e.g. `http://localhost:5500` (CORS) |
 | `NODE_ENV` | `development` or `production` |
 
-Create the database (if it doesn't already exist) and run the migration —
-this creates all 5 tables (User, Transaction, Budget, SavingsGoal, Notification):
+Create the database (if it doesn't already exist), then apply the committed
+migrations — this creates all 5 tables (User, Transaction, Budget,
+SavingsGoal, Notification):
 
 ```bash
-npx prisma migrate dev --name init
+npx prisma migrate deploy
 ```
 
 Start the backend:
@@ -104,17 +115,17 @@ POST   /api/auth/login           { email, password }
 GET    /api/auth/me
 POST   /api/auth/logout
 
-GET    /api/transactions         ?type=&category=&search=&sort=&page=&limit=
-POST   /api/transactions         { type, amount, category, description, date }
+GET    /api/transactions         ?type=&category=&search=&dateFrom=&dateTo=&minAmount=&maxAmount=&sort=&page=&limit=
+POST   /api/transactions         { type, amount, category, description, notes?, date }
 GET    /api/transactions/:id
 PUT    /api/transactions/:id
 DELETE /api/transactions/:id
 
-GET    /api/budgets              ?month=&year=
-GET    /api/budgets/summary       ?month=&year=
-POST   /api/budgets              { category, limit, month?, year? }
+GET    /api/budgets              - every budget the user has (past, active, upcoming)
+GET    /api/budgets/summary       - totals across budgets active right now
+POST   /api/budgets              { category, limit, startDate, endDate }
 PUT    /api/budgets/:id
-DELETE /api/budgets/:id
+DELETE /api/budgets/:id          - never deletes the underlying transactions
 
 GET    /api/goals
 POST   /api/goals                { title, targetAmount, icon? }

@@ -21,12 +21,17 @@ Edit `.env`:
 - `JWT_SECRET` — any long random string (e.g. `openssl rand -hex 32`)
 - `CLIENT_URL` — the origin the frontend is served from (e.g. `http://localhost:5500`)
 
-Create the database (if it doesn't exist yet), then run the migration —
-this creates all 5 tables (User, Transaction, Budget, SavingsGoal, Notification):
+Create the database (if it doesn't exist yet), then apply the committed
+migrations in `prisma/migrations/` — this creates all 5 tables (User,
+Transaction, Budget, SavingsGoal, Notification):
 
 ```bash
-npx prisma migrate dev --name init
+npx prisma migrate deploy
 ```
+
+(If you're actively changing `schema.prisma` yourself later, use
+`npx prisma migrate dev --name <description>` instead - that's the
+interactive command that also generates a new migration file.)
 
 Start the server:
 
@@ -61,26 +66,34 @@ curl -s -X POST $BASE/auth/login -H "Content-Type: application/json" \
 
 curl -s $BASE/auth/me -H "$AUTH"
 
-# 3. Add income + expenses (dates default to whatever you pass)
+# 3. Add income + expenses (dates default to whatever you pass; notes are optional)
 curl -s -X POST $BASE/transactions -H "$AUTH" -H "Content-Type: application/json" \
   -d '{"type":"INCOME","amount":50000,"category":"Salary","description":"Monthly pay","date":"2026-09-01"}'
 curl -s -X POST $BASE/transactions -H "$AUTH" -H "Content-Type: application/json" \
-  -d '{"type":"EXPENSE","amount":5000,"category":"Food","description":"Groceries","date":"2026-09-05"}'
+  -d '{"type":"EXPENSE","amount":5000,"category":"Food","description":"Groceries","notes":"Weekly shop","date":"2026-09-05"}'
 curl -s -X POST $BASE/transactions -H "$AUTH" -H "Content-Type: application/json" \
   -d '{"type":"EXPENSE","amount":2000,"category":"Transport","description":"Cab","date":"2026-09-06"}'
 
-# 4. Search / filter / sort
+# 4. Search (matches description, category AND notes) / filter / date range / amount range / sort
 curl -s "$BASE/transactions?type=EXPENSE&sort=amount-desc" -H "$AUTH"
-curl -s "$BASE/transactions?search=grocer" -H "$AUTH"
+curl -s "$BASE/transactions?search=weekly" -H "$AUTH"
+curl -s "$BASE/transactions?dateFrom=2026-09-01&dateTo=2026-09-30" -H "$AUTH"
+curl -s "$BASE/transactions?minAmount=1000&maxAmount=6000" -H "$AUTH"
 
 # 5. Dashboard - totals are computed from the transactions above, not hard-coded
 curl -s $BASE/dashboard -H "$AUTH"
 curl -s "$BASE/dashboard?period=year" -H "$AUTH"
 
-# 6. Budget: spent/remaining/percentage computed live from real transactions
+# 6. Budget: give it its own date range (not locked to a calendar month).
+#    spent/remaining/percentage are computed live from real transactions in that range.
 curl -s -X POST $BASE/budgets -H "$AUTH" -H "Content-Type: application/json" \
-  -d '{"category":"Food","limit":10000}'
-curl -s $BASE/budgets/summary -H "$AUTH"
+  -d '{"category":"Food","limit":10000,"startDate":"2026-09-01","endDate":"2026-09-30"}'
+curl -s $BASE/budgets -H "$AUTH"           # every budget (past/active/upcoming), each with a computed "status"
+curl -s $BASE/budgets/summary -H "$AUTH"   # totals across only the budgets active right now
+
+# 6b. A second Food budget overlapping that same date range is rejected (409)
+curl -s -X POST $BASE/budgets -H "$AUTH" -H "Content-Type: application/json" \
+  -d '{"category":"Food","limit":5000,"startDate":"2026-09-15","endDate":"2026-10-15"}'
 
 # 7. Analytics
 curl -s $BASE/analytics/monthly -H "$AUTH"
@@ -108,15 +121,21 @@ curl -s $BASE/goals/$GOAL_ID -H "Authorization: Bearer $TOKEN2" # -> 404
 
 ## Notes on how a few things are computed
 
-- **Budgets** never store `spent`. `GET /api/budgets` and `/summary` sum the
-  real `EXPENSE` transactions for that category/month on every request, so
-  the number is always correct even if you edit or delete a transaction
-  afterwards.
+- **Budgets** have their own `startDate`/`endDate` (not a calendar month) and
+  never store `spent`. `GET /api/budgets` sums the real `EXPENSE` transactions
+  in that exact range on every request, so the number is always correct even
+  if you edit or delete a transaction afterwards. `GET /api/budgets/summary`
+  totals only the budgets whose range includes today (`status: "active"`);
+  `GET /api/budgets` returns every budget, each tagged `upcoming`/`active`/`ended`.
+  Two budgets for the same category with overlapping date ranges are rejected
+  with 409 - you'd otherwise have no single answer for "what's my Food limit
+  today". Deleting a budget never deletes the transactions in that category.
 - **Notifications** are generated, not scheduled: creating/editing an expense
-  re-checks that category's budget; creating or editing a budget re-checks it
-  immediately too (so a budget created after the spending already happened
-  still gets a warning); depositing to a goal re-checks its 50%/100%
-  milestones. Each check is deduplicated (budgets: once per calendar month;
-  goals: once ever) so the same event won't create duplicate notifications.
+  re-checks any budget for that category covering that date; creating or
+  editing a budget re-checks it immediately too (so a budget created after
+  the spending already happened still gets a warning); depositing to a goal
+  re-checks its 50%/100% milestones. Each check is deduplicated (budgets:
+  once per budget, using the budget's own creation time as the window; goals:
+  once ever) so the same event won't create duplicate notifications.
 - **Dashboard forecast** (`/api/analytics/forecast`) projects the rest of the
   month from this month's real average daily spend — it's not a fixed number.
