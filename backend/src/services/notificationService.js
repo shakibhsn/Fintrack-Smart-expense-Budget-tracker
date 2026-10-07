@@ -1,11 +1,12 @@
 const prisma = require('../config/prisma');
-const { monthRange, getBudgetsWithSpending } = require('./budgetService');
+const { getBudgetsWithSpending } = require('./budgetService');
 const { toNumber } = require('../utils/serialize');
 
 // Creates a notification only if one with the same title doesn't already exist
 // in the given window. This is the whole "don't spam the user" strategy:
-// budgets are deduped per calendar month, goal milestones are deduped forever
-// (a milestone only needs to be announced once per goal).
+// budget alerts are deduped per budget (using the budget's own createdAt as the
+// window start, since each budget now has its own arbitrary date range rather than
+// a calendar month); goal milestones are deduped forever (announced once per goal).
 const createIfNew = async (userId, { title, message, type }, since) => {
   const existing = await prisma.notification.findFirst({
     where: { userId, title, ...(since ? { createdAt: { gte: since } } : {}) },
@@ -14,33 +15,38 @@ const createIfNew = async (userId, { title, message, type }, since) => {
   return prisma.notification.create({ data: { userId, title, message, type } });
 };
 
-// Call after any EXPENSE transaction is created/updated for `category`.
-// Looks at the real budget for that category/month and raises a warning or
-// exceeded alert based on actual spending - never a guess.
-const checkBudgetForCategory = async (userId, category, month, year) => {
+// Call after any EXPENSE transaction is created/updated for `category` (with `onDate`
+// being the transaction's date), or after a budget for `category` is created/updated
+// (with `onDate` being that budget's startDate). Finds every budget for this category
+// whose date range covers `onDate` and raises a warning/exceeded alert from its real,
+// computed spending - never a guess.
+const checkBudgetByCategoryAndDate = async (userId, category, onDate) => {
   try {
-    const budgets = await getBudgetsWithSpending(userId, month, year);
-    const budget = budgets.find((b) => b.category === category);
-    if (!budget) return; // user hasn't set a budget for this category - nothing to alert on
+    const budgets = await getBudgetsWithSpending(userId);
+    const matches = budgets.filter((b) => b.category === category && b.startDate <= onDate && onDate <= b.endDate);
 
-    const { start } = monthRange(month, year);
+    for (const budget of matches) {
+      const range = `${budget.startDate.toISOString().slice(0, 10)} – ${budget.endDate.toISOString().slice(0, 10)}`;
 
-    if (budget.isOverBudget) {
-      await createIfNew(userId, {
-        title: `Budget Exceeded: ${category}`,
-        message: `You've exceeded your ${category} budget by ৳${budget.overBy.toLocaleString()} (${budget.percentage}% used).`,
-        type: 'BUDGET_EXCEEDED',
-      }, start);
-    } else if (budget.percentage >= 80) {
-      await createIfNew(userId, {
-        title: `Budget Warning: ${category}`,
-        message: `You've used ${budget.percentage}% of your ${category} budget (৳${budget.spent.toLocaleString()} of ৳${budget.limit.toLocaleString()}).`,
-        type: 'BUDGET_WARNING',
-      }, start);
+      if (budget.isOverBudget) {
+        // eslint-disable-next-line no-await-in-loop
+        await createIfNew(userId, {
+          title: `Budget Exceeded: ${category}`,
+          message: `You've exceeded your ${category} budget (${range}) by ৳${budget.overBy.toLocaleString()} (${budget.percentage}% used).`,
+          type: 'BUDGET_EXCEEDED',
+        }, budget.createdAt);
+      } else if (budget.percentage >= 80) {
+        // eslint-disable-next-line no-await-in-loop
+        await createIfNew(userId, {
+          title: `Budget Warning: ${category}`,
+          message: `You've used ${budget.percentage}% of your ${category} budget (৳${budget.spent.toLocaleString()} of ৳${budget.limit.toLocaleString()}, ${range}).`,
+          type: 'BUDGET_WARNING',
+        }, budget.createdAt);
+      }
     }
   } catch (err) {
-    // A notification failing to generate should never break the transaction request itself.
-    console.error('checkBudgetForCategory failed:', err.message);
+    // A notification failing to generate should never break the transaction/budget request itself.
+    console.error('checkBudgetByCategoryAndDate failed:', err.message);
   }
 };
 
@@ -85,4 +91,4 @@ const createWelcomeNotification = async (userId) => {
   }
 };
 
-module.exports = { checkBudgetForCategory, checkGoalMilestones, createWelcomeNotification };
+module.exports = { checkBudgetByCategoryAndDate, checkGoalMilestones, createWelcomeNotification };

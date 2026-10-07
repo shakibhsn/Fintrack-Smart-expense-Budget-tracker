@@ -8,9 +8,28 @@ const serializeTransaction = (tx) => ({
   amount: toNumber(tx.amount),
   category: tx.category,
   description: tx.description,
+  notes: tx.notes ?? null,
   date: tx.date.toISOString().slice(0, 10),
   createdAt: tx.createdAt,
   updatedAt: tx.updatedAt,
+});
+
+// Budget rows come from budgetService already carrying computed spent/remaining/etc.
+// This just formats the Date fields for the API the same way transactions/goals are.
+const serializeBudget = (b) => ({
+  id: b.id,
+  category: b.category,
+  limit: b.limit,
+  startDate: b.startDate.toISOString().slice(0, 10),
+  endDate: b.endDate.toISOString().slice(0, 10),
+  status: b.status,
+  spent: b.spent,
+  remaining: b.remaining,
+  percentage: b.percentage,
+  isOverBudget: b.isOverBudget,
+  overBy: b.overBy,
+  prevSpent: b.prevSpent,
+  momChangePercent: b.momChangePercent,
 });
 
 const serializeGoal = (goal) => {
@@ -30,4 +49,4 @@ const serializeGoal = (goal) => {
   };
 };
 
-module.exports = { toNumber, serializeTransaction, serializeGoal };
+module.exports = { toNumber, serializeTransaction, serializeGoal, serializeBudget };

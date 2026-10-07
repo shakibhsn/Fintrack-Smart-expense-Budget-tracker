@@ -1,6 +1,6 @@
 const prisma = require('../config/prisma');
 const { toNumber } = require('../utils/serialize');
-const { monthRange } = require('./budgetService');
+const { monthRange } = require('../utils/dateRange');
 
 const MONTH_LABELS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
