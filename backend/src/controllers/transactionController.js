@@ -3,7 +3,7 @@ const asyncHandler = require('../utils/asyncHandler');
 const httpError = require('../utils/httpError');
 const { serializeTransaction } = require('../utils/serialize');
 const { listQuerySchema } = require('../validators/transactionValidators');
-const { checkBudgetForCategory } = require('../services/notificationService');
+const { checkBudgetByCategoryAndDate } = require('../services/notificationService');
 
 const SORTS = {
   'date-desc': [{ date: 'desc' }, { createdAt: 'desc' }],
@@ -19,9 +19,9 @@ const findOwned = async (id, userId) => {
   return tx;
 };
 
-// GET /api/transactions?type=&category=&search=&sort=&page=&limit=
+// GET /api/transactions?type=&category=&search=&dateFrom=&dateTo=&minAmount=&maxAmount=&sort=&page=&limit=
 const getTransactions = asyncHandler(async (req, res) => {
-  const { type, category, search, sort, page, limit } = listQuerySchema.parse(req.query);
+  const { type, category, search, dateFrom, dateTo, minAmount, maxAmount, sort, page, limit } = listQuerySchema.parse(req.query);
 
   const where = { userId: req.user.id };
   if (type) where.type = type;
@@ -30,7 +30,18 @@ const getTransactions = asyncHandler(async (req, res) => {
     where.OR = [
       { description: { contains: search, mode: 'insensitive' } },
       { category: { contains: search, mode: 'insensitive' } },
+      { notes: { contains: search, mode: 'insensitive' } },
     ];
+  }
+  if (dateFrom || dateTo) {
+    where.date = {};
+    if (dateFrom) where.date.gte = dateFrom;
+    if (dateTo) where.date.lte = dateTo;
+  }
+  if (minAmount !== undefined || maxAmount !== undefined) {
+    where.amount = {};
+    if (minAmount !== undefined) where.amount.gte = minAmount;
+    if (maxAmount !== undefined) where.amount.lte = maxAmount;
   }
 
   const [total, rows] = await Promise.all([
@@ -66,7 +77,7 @@ const createTransaction = asyncHandler(async (req, res) => {
   // notify if it's now near or over the limit. Awaited so a client that refetches
   // notifications right after this request is guaranteed to see it.
   if (tx.type === 'EXPENSE') {
-    await checkBudgetForCategory(req.user.id, tx.category, tx.date.getUTCMonth() + 1, tx.date.getUTCFullYear());
+    await checkBudgetByCategoryAndDate(req.user.id, tx.category, tx.date);
   }
 
   res.status(201).json({ success: true, data: { transaction: serializeTransaction(tx) } });
@@ -78,7 +89,7 @@ const updateTransaction = asyncHandler(async (req, res) => {
   const tx = await prisma.transaction.update({ where: { id: req.params.id }, data: req.body });
 
   if (tx.type === 'EXPENSE') {
-    await checkBudgetForCategory(req.user.id, tx.category, tx.date.getUTCMonth() + 1, tx.date.getUTCFullYear());
+    await checkBudgetByCategoryAndDate(req.user.id, tx.category, tx.date);
   }
 
   res.json({ success: true, data: { transaction: serializeTransaction(tx) } });
