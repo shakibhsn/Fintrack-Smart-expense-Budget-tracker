@@ -34,13 +34,15 @@ const getMonthlyIncomeExpense = async (userId, months = 6) => {
   );
 };
 
-// Expense breakdown by category for one calendar month, with the percentage
-// of that month's total expenses and the % change vs. the previous month
-// (used for both the dashboard donut chart and the Budgets "MoM Variance" panel).
-const getCategoryBreakdown = async (userId, month, year) => {
-  const { start, end } = monthRange(month, year);
-  const prevDate = new Date(Date.UTC(year, month - 2, 1)); // month is 1-indexed
-  const prev = monthRange(prevDate.getUTCMonth() + 1, prevDate.getUTCFullYear());
+// Expense breakdown by category within an arbitrary [start, end) date range, with the
+// percentage of that range's total expenses and the % change vs. an equal-length window
+// immediately before it. Used by the dashboard donut chart (whatever range the selected
+// period resolves to - this month/last month/this year, so it always matches the summary
+// cards shown next to it) and by GET /api/analytics/categories (a specific calendar month).
+const getCategoryBreakdown = async (userId, start, end) => {
+  const durationMs = end.getTime() - start.getTime();
+  const prevEnd = start;
+  const prevStart = new Date(start.getTime() - durationMs);
 
   const [rows, prevRows] = await Promise.all([
     prisma.transaction.groupBy({
@@ -50,7 +52,7 @@ const getCategoryBreakdown = async (userId, month, year) => {
     }),
     prisma.transaction.groupBy({
       by: ['category'],
-      where: { userId, type: 'EXPENSE', date: { gte: prev.start, lt: prev.end } },
+      where: { userId, type: 'EXPENSE', date: { gte: prevStart, lt: prevEnd } },
       _sum: { amount: true },
     }),
   ]);

@@ -4,8 +4,10 @@ const { serializeTransaction } = require('../utils/serialize');
 const { sumByType, getMonthlyIncomeExpense, getCategoryBreakdown } = require('../services/analyticsService');
 const { dashboardQuerySchema } = require('../validators/periodValidators');
 
-// Maps the frontend's period selector to an actual [start, end) date range
-// and, separately, which calendar month the category breakdown should use.
+// Maps the frontend's period selector to an actual [start, end) date range.
+// This exact range is used for BOTH the summary totals and the category
+// breakdown, so the two numbers on screen always agree with each other -
+// selecting "This Year" used to still show only this month's categories.
 const resolvePeriod = (period) => {
   const now = new Date();
   const y = now.getUTCFullYear();
@@ -18,31 +20,25 @@ const resolvePeriod = (period) => {
     return {
       start: new Date(Date.UTC(year, month - 1, 1)),
       end: new Date(Date.UTC(year, month, 1)),
-      categoryMonth: month,
-      categoryYear: year,
     };
   }
   if (period === 'year') {
     return {
       start: new Date(Date.UTC(y, 0, 1)),
       end: new Date(Date.UTC(y + 1, 0, 1)),
-      categoryMonth: m,
-      categoryYear: y,
     };
   }
   // default: this month
   return {
     start: new Date(Date.UTC(y, m - 1, 1)),
     end: new Date(Date.UTC(y, m, 1)),
-    categoryMonth: m,
-    categoryYear: y,
   };
 };
 
 // GET /api/dashboard?period=month|last_month|year
 const getDashboard = asyncHandler(async (req, res) => {
   const { period } = dashboardQuerySchema.parse(req.query);
-  const { start, end, categoryMonth, categoryYear } = resolvePeriod(period);
+  const { start, end } = resolvePeriod(period);
 
   const [{ income, expense }, recentRows, categoryExpenses, monthlyIncomeExpense] = await Promise.all([
     sumByType(req.user.id, start, end),
@@ -51,7 +47,7 @@ const getDashboard = asyncHandler(async (req, res) => {
       orderBy: [{ date: 'desc' }, { createdAt: 'desc' }],
       take: 5,
     }),
-    getCategoryBreakdown(req.user.id, categoryMonth, categoryYear),
+    getCategoryBreakdown(req.user.id, start, end),
     getMonthlyIncomeExpense(req.user.id, 6),
   ]);
 
