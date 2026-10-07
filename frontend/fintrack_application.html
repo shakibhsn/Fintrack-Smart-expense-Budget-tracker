@@ -1493,15 +1493,22 @@
 
             if (categoryBudgets.length > 0) {
                 const worst = [...categoryBudgets].sort((a, b) => b.percentage - a.percentage)[0];
-                if (worst.percentage >= 80) {
-                    const over = worst.isOverBudget;
+                // Same 0-69/70-89/90-100/>100 tiers as the Budgets page - only warning-and-up gets an insight card.
+                const tier = worst.isOverBudget ? 'over' : worst.percentage >= 90 ? 'critical' : worst.percentage >= 70 ? 'warning' : null;
+                const TIER_COPY = {
+                    warning: { emoji: '⚠️', label: 'Budget Warning', bg: 'bg-amber-500/10 border-amber-500/20', text: 'text-amber-600 dark:text-amber-400' },
+                    critical: { emoji: '🔶', label: 'Budget Critical', bg: 'bg-orange-500/10 border-orange-500/20', text: 'text-orange-600 dark:text-orange-400' },
+                    over: { emoji: '🚨', label: 'Budget Exceeded', bg: 'bg-rose-500/10 border-rose-500/20', text: 'text-rose-600 dark:text-rose-400' },
+                };
+                if (tier) {
+                    const t = TIER_COPY[tier];
                     cards.push(`
-                        <div class="p-3 rounded-xl ${over ? 'bg-rose-500/10 border-rose-500/20' : 'bg-amber-500/10 border-amber-500/20'} border space-y-1">
-                            <div class="flex items-center justify-between ${over ? 'text-rose-600 dark:text-rose-400' : 'text-amber-600 dark:text-amber-400'} font-bold text-xs">
-                                <span>${over ? '🚨 Budget Exceeded' : '⚠️ Budget Warning'}</span>
+                        <div class="p-3 rounded-xl ${t.bg} border space-y-1">
+                            <div class="flex items-center justify-between ${t.text} font-bold text-xs">
+                                <span>${t.emoji} ${t.label}</span>
                                 <span>${worst.percentage}% Used</span>
                             </div>
-                            <p class="text-xs text-main">${escapeHtml(worst.category)} expense reached ৳${fmt(worst.spent)} vs budget ৳${fmt(worst.limit)}.${over ? ` Over budget by ৳${fmt(worst.overBy)}!` : ''}</p>
+                            <p class="text-xs text-main">${escapeHtml(worst.category)} expense reached ৳${fmt(worst.spent)} vs budget ৳${fmt(worst.limit)}.${tier === 'over' ? ` Over budget by ৳${fmt(worst.overBy)}!` : ''}</p>
                         </div>
                     `);
                 }
@@ -1550,6 +1557,7 @@
 
         const NOTIF_STYLES = {
             BUDGET_EXCEEDED: { bg: 'bg-rose-500/10 border-rose-500/20', icon: 'fa-triangle-exclamation text-rose-500' },
+            BUDGET_CRITICAL: { bg: 'bg-orange-500/10 border-orange-500/20', icon: 'fa-triangle-exclamation text-orange-500' },
             BUDGET_WARNING: { bg: 'bg-amber-500/10 border-amber-500/20', icon: 'fa-triangle-exclamation text-amber-500' },
             GOAL_PROGRESS: { bg: 'bg-accent-500/10 border-accent-500/20', icon: 'fa-bullseye text-accent-500' },
             INFO: { bg: 'bg-brand-500/10 border-brand-500/20', icon: 'fa-lightbulb text-brand-500' },
@@ -1791,10 +1799,18 @@
             categoryBudgets.forEach(b => {
                 const pct = b.percentage;
                 const isOver = b.isOverBudget;
+                // Spending health tier: 0-69% healthy, 70-89% warning, 90-100% critical, >100% over budget.
+                const tier = isOver ? 'over' : pct >= 90 ? 'critical' : pct >= 70 ? 'warning' : 'healthy';
+                const HEALTH = {
+                    healthy: { pill: 'text-muted bg-input', bar: 'bg-brand-500', border: 'border-theme', label: 'Healthy' },
+                    warning: { pill: 'text-amber-600 dark:text-amber-400 bg-amber-500/10', bar: 'bg-amber-500', border: 'border-amber-500/40 bg-amber-500/5', label: 'Warning' },
+                    critical: { pill: 'text-orange-600 dark:text-orange-400 bg-orange-500/10', bar: 'bg-orange-500', border: 'border-orange-500/40 bg-orange-500/5', label: 'Critical' },
+                    over: { pill: 'text-rose-500 bg-rose-500/10', bar: 'bg-rose-500', border: 'border-rose-500/50 bg-rose-500/5', label: 'Over Budget' },
+                }[tier];
 
                 // Category Budget Card
                 const card = document.createElement('div');
-                card.className = `bg-card p-5 rounded-2xl border ${isOver ? 'border-rose-500/50 bg-rose-500/5' : 'border-theme'} shadow-sm space-y-3`;
+                card.className = `bg-card p-5 rounded-2xl border ${HEALTH.border} shadow-sm space-y-3`;
                 card.innerHTML = `
                     <div class="flex items-center justify-between">
                         <div class="flex items-center gap-2">
@@ -1807,8 +1823,8 @@
                             </div>
                         </div>
                         <div class="flex items-center gap-1">
-                            <span class="text-xs font-extrabold ${isOver ? 'text-rose-500 bg-rose-500/10' : 'text-muted bg-input'} px-2 py-0.5 rounded-lg">
-                                ${pct}%
+                            <span class="text-xs font-extrabold ${HEALTH.pill} px-2 py-0.5 rounded-lg whitespace-nowrap">
+                                ${pct}% · ${HEALTH.label}
                             </span>
                             <button onclick="openBudgetModal('${b.id}')" class="p-1 text-slate-400 hover:text-brand-500 text-xs"><i class="fa-solid fa-pen"></i></button>
                             <button onclick="deleteBudget('${b.id}')" class="p-1 text-slate-400 hover:text-rose-500 text-xs"><i class="fa-solid fa-trash-can"></i></button>
@@ -1822,7 +1838,7 @@
                         </span>
                     </div>
                     <div class="w-full h-2.5 bg-input rounded-full overflow-hidden">
-                        <div class="h-full rounded-full ${isOver ? 'bg-rose-500' : pct > 80 ? 'bg-amber-500' : 'bg-brand-500'}" style="width: ${Math.min(pct, 100)}%"></div>
+                        <div class="h-full rounded-full ${HEALTH.bar}" style="width: ${Math.min(pct, 100)}%"></div>
                     </div>
                 `;
                 grid.appendChild(card);

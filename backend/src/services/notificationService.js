@@ -15,11 +15,20 @@ const createIfNew = async (userId, { title, message, type }, since) => {
   return prisma.notification.create({ data: { userId, title, message, type } });
 };
 
+// Budget health tiers (0-69% healthy / 70-89% warning / 90-100% critical / >100% over budget).
+// "Healthy" never raises a notification - only a crossing into warning/critical/over does.
+const budgetTier = (budget) => {
+  if (budget.isOverBudget) return 'over';
+  if (budget.percentage >= 90) return 'critical';
+  if (budget.percentage >= 70) return 'warning';
+  return 'healthy';
+};
+
 // Call after any EXPENSE transaction is created/updated for `category` (with `onDate`
 // being the transaction's date), or after a budget for `category` is created/updated
 // (with `onDate` being that budget's startDate). Finds every budget for this category
-// whose date range covers `onDate` and raises a warning/exceeded alert from its real,
-// computed spending - never a guess.
+// whose date range covers `onDate` and raises an alert for its current tier, from its
+// real, computed spending - never a guess.
 const checkBudgetByCategoryAndDate = async (userId, category, onDate) => {
   try {
     const budgets = await getBudgetsWithSpending(userId);
@@ -27,15 +36,23 @@ const checkBudgetByCategoryAndDate = async (userId, category, onDate) => {
 
     for (const budget of matches) {
       const range = `${budget.startDate.toISOString().slice(0, 10)} – ${budget.endDate.toISOString().slice(0, 10)}`;
+      const tier = budgetTier(budget);
 
-      if (budget.isOverBudget) {
+      if (tier === 'over') {
         // eslint-disable-next-line no-await-in-loop
         await createIfNew(userId, {
           title: `Budget Exceeded: ${category}`,
           message: `You've exceeded your ${category} budget (${range}) by ৳${budget.overBy.toLocaleString()} (${budget.percentage}% used).`,
           type: 'BUDGET_EXCEEDED',
         }, budget.createdAt);
-      } else if (budget.percentage >= 80) {
+      } else if (tier === 'critical') {
+        // eslint-disable-next-line no-await-in-loop
+        await createIfNew(userId, {
+          title: `Budget Critical: ${category}`,
+          message: `You've used ${budget.percentage}% of your ${category} budget (৳${budget.spent.toLocaleString()} of ৳${budget.limit.toLocaleString()}, ${range}) - almost there.`,
+          type: 'BUDGET_CRITICAL',
+        }, budget.createdAt);
+      } else if (tier === 'warning') {
         // eslint-disable-next-line no-await-in-loop
         await createIfNew(userId, {
           title: `Budget Warning: ${category}`,
