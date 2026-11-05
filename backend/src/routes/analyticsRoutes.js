@@ -5,6 +5,7 @@ const { protect } = require('../middleware/authMiddleware');
 const router = express.Router();
 router.use(protect);
 
+router.get('/overview', c.getOverview);
 router.get('/monthly', c.getMonthly);
 router.get('/categories', c.getCategories);
 router.get('/income-expense', c.getIncomeExpense);

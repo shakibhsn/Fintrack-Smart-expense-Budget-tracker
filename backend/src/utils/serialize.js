@@ -1,5 +1,7 @@
 // Prisma returns Decimal objects for money columns. The frontend wants plain numbers,
 // and dates as YYYY-MM-DD strings, so we convert here in one place.
+const { goalMetrics } = require('./goalMetrics');
+
 const toNumber = (value) => (value === null || value === undefined ? value : Number(value));
 
 const serializeTransaction = (tx) => ({
@@ -32,21 +34,26 @@ const serializeBudget = (b) => ({
   momChangePercent: b.momChangePercent,
 });
 
-const serializeGoal = (goal) => {
-  const targetAmount = toNumber(goal.targetAmount);
-  const savedAmount = toNumber(goal.savedAmount);
-  const progress = targetAmount > 0 ? Math.round((savedAmount / targetAmount) * 1000) / 10 : 0;
-  return {
-    id: goal.id,
-    title: goal.title,
-    targetAmount,
-    savedAmount,
-    remaining: Math.max(targetAmount - savedAmount, 0),
-    progress: Math.min(progress, 100),
-    icon: goal.icon,
-    createdAt: goal.createdAt,
-    updatedAt: goal.updatedAt,
-  };
-};
+const serializeGoal = (goal) => ({
+  id: goal.id,
+  title: goal.title,
+  ...goalMetrics(goal),
+  targetDate: goal.targetDate ? goal.targetDate.toISOString().slice(0, 10) : null,
+  category: goal.category ?? null,
+  description: goal.description ?? null,
+  icon: goal.icon,
+  contributionCount: goal._count ? goal._count.contributions : undefined,
+  createdAt: goal.createdAt,
+  updatedAt: goal.updatedAt,
+});
 
-module.exports = { toNumber, serializeTransaction, serializeGoal, serializeBudget };
+const serializeContribution = (c) => ({
+  id: c.id,
+  goalId: c.goalId,
+  amount: toNumber(c.amount),
+  date: c.date.toISOString().slice(0, 10),
+  note: c.note ?? null,
+  createdAt: c.createdAt,
+});
+
+module.exports = { toNumber, serializeTransaction, serializeGoal, serializeBudget, serializeContribution };

@@ -11,6 +11,9 @@ const goalRoutes = require('./routes/goalRoutes');
 const dashboardRoutes = require('./routes/dashboardRoutes');
 const analyticsRoutes = require('./routes/analyticsRoutes');
 const notificationRoutes = require('./routes/notificationRoutes');
+const insightRoutes = require('./routes/insightRoutes');
+const healthScoreRoutes = require('./routes/healthScoreRoutes');
+const { invalidateOnWrite } = require('./services/derivedCache');
 const { notFound, errorHandler } = require('./middleware/errorMiddleware');
 
 const app = express();
@@ -55,12 +58,15 @@ app.get('/api/health', (req, res) => {
 
 // ---- Routes ----
 app.use('/api/auth', authRoutes);
-app.use('/api/transactions', transactionRoutes);
-app.use('/api/budgets', budgetRoutes);
-app.use('/api/goals', goalRoutes);
+// Writes to transactions/budgets/goals clear that user's cached insights + health score
+app.use('/api/transactions', invalidateOnWrite, transactionRoutes);
+app.use('/api/budgets', invalidateOnWrite, budgetRoutes);
+app.use('/api/goals', invalidateOnWrite, goalRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/notifications', notificationRoutes);
+app.use('/api/insights', insightRoutes);
+app.use('/api/health-score', healthScoreRoutes);
 
 // ---- 404 + centralized error handling (must be registered last) ----
 app.use(notFound);

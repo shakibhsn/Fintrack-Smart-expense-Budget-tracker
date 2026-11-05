@@ -21,14 +21,32 @@ Frontend (static HTML/JS) → REST API (Express) → Prisma ORM → PostgreSQL
   rejected (409). `spent`, `remaining` and `percentage` are always computed
   live from real transactions in that date range, never stored. Each budget
   carries a computed `status`: `upcoming` / `active` / `ended`.
-- **Savings Goals** — CRUD plus deposits (server-side atomic increment;
-  negative/invalid amounts rejected).
+- **Savings Goals** — CRUD with optional target date, category and description,
+  an optional starting balance, and a stored contribution history. Progress,
+  remaining amount and status (Not Started / In Progress / Completed /
+  Overdue) are calculated by the API; the bar never exceeds 100% (any extra is
+  shown as "above target"). Contributions are **not** transactions — see
+  "Savings goal accounting" in `backend/README.md`. A Savings Goals card on
+  the dashboard summarises them.
 - **Dashboard** (`GET /api/dashboard`) — real income/expense/balance/savings
   rate for This Month / Last Month / This Year, recent transactions, a
   category breakdown, and a trailing 6-month income-vs-expense trend.
-- **Analytics** — monthly income/expense trend, category breakdown with
-  month-over-month change, and a spending forecast (daily average projected
-  across the month).
+- **Analytics** — a period-filtered page (This Month / Last Month / Last 3 / Last 6
+  Months / This Year / Custom range) with income vs expenses, spending and
+  savings trends, expense breakdown, income distribution, top categories and
+  an honest comparison with the previous equivalent period. All numbers are
+  aggregated by the database for the signed-in user. The older monthly /
+  category / forecast endpoints remain.
+- **Smart Insights** — a rule-based engine (no AI/ML) that turns your own
+  transactions, budgets and goals into spending, budget, savings, habit and
+  recommendation insights, each with a "Why?" explaining the rule and numbers.
+  Shows "Not enough financial data to generate insights yet." until there is
+  enough data.
+- **Financial Health Score** — a transparent 0–100 educational score from five
+  documented components, normalised over the components your data supports,
+  with a per-component breakdown, strengths, suggestions and a score history
+  recomputed from real past data. Unavailable (never a placeholder number)
+  until the minimum data exists. Formulas: `backend/README.md`.
 - **Notifications** — generated from real activity, not scheduled fake data:
   a budget crossing 80% or 100% raises a warning/exceeded alert (checked both
   when an expense is added *and* when the budget itself is created/edited),
@@ -128,14 +146,19 @@ PUT    /api/budgets/:id
 DELETE /api/budgets/:id          - never deletes the underlying transactions
 
 GET    /api/goals
-POST   /api/goals                { title, targetAmount, icon? }
+GET    /api/goals/summary         - dashboard overview (counts, totals, upcoming target dates)
+POST   /api/goals                { title, targetAmount, savedAmount?, targetDate?, category?, description?, icon? }
 GET    /api/goals/:id
-PUT    /api/goals/:id
-DELETE /api/goals/:id
-POST   /api/goals/:id/deposit    { amount }
+PUT    /api/goals/:id            - never changes savedAmount (use contributions)
+DELETE /api/goals/:id            - also deletes its contribution history
+GET    /api/goals/:id/contributions
+POST   /api/goals/:id/contributions  { amount, date?, note? }   (/deposit is a legacy alias)
 
 GET    /api/dashboard             ?period=month|last_month|year
 
+GET    /api/analytics/overview    ?period=this_month|last_month|last_3_months|last_6_months|this_year|custom&startDate=&endDate=
+GET    /api/insights              - rule-based insights (cached until your data changes)
+GET    /api/health-score          - financial health score + breakdown + history
 GET    /api/analytics/monthly     ?months=6
 GET    /api/analytics/categories  ?month=&year=
 GET    /api/analytics/income-expense ?months=6
@@ -163,7 +186,8 @@ fintrack/
     │   ├── routes/
     │   ├── middleware/       auth, validation, centralized error handler
     │   ├── validators/       Zod schemas
-    │   ├── services/         budget/analytics/notification calculations
+    │   ├── services/         budget/analytics/goal/insight/health-score calculations
+    │   ├── utils/            shared finance + date-range + goal-metric helpers
     │   └── server.js
     ├── prisma/schema.prisma
     ├── .env.example

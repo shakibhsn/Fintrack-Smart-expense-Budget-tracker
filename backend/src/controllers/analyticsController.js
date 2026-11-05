@@ -1,6 +1,6 @@
 const asyncHandler = require('../utils/asyncHandler');
-const { getMonthlyIncomeExpense, getCategoryBreakdown, getSpendingForecast } = require('../services/analyticsService');
-const { monthlyQuerySchema, categoryQuerySchema } = require('../validators/periodValidators');
+const { getMonthlyIncomeExpense, getCategoryBreakdown, getSpendingForecast, getAnalyticsOverview } = require('../services/analyticsService');
+const { monthlyQuerySchema, categoryQuerySchema, overviewQuerySchema } =require('../validators/periodValidators');
 const { monthRange } = require('../utils/dateRange');
 
 // GET /api/analytics/monthly?months=6
@@ -32,4 +32,11 @@ const getForecast = asyncHandler(async (req, res) => {
   res.json({ success: true, data });
 });
 
-module.exports = { getMonthly, getCategories, getIncomeExpense, getForecast };
+// GET /api/analytics/overview?period=&startDate=&endDate=
+const getOverview = asyncHandler(async (req, res) => {
+  const query = overviewQuerySchema.parse(req.query);
+  const data = await getAnalyticsOverview(req.user.id, query);
+  res.json({ success: true, data });
+});
+
+module.exports = { getOverview, getMonthly, getCategories, getIncomeExpense, getForecast };

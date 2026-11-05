@@ -137,6 +137,14 @@
                     <i class="fa-solid fa-chart-line w-5 text-center text-base"></i>
                     <span>Analytics</span>
                 </button>
+                <button data-page="insights" class="nav-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-semibold text-muted hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-main transition-all-200">
+                    <i class="fa-solid fa-lightbulb w-5 text-center text-base"></i>
+                    <span>Insights</span>
+                </button>
+                <button data-page="health" class="nav-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-semibold text-muted hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-main transition-all-200">
+                    <i class="fa-solid fa-heart-pulse w-5 text-center text-base"></i>
+                    <span>Health Score</span>
+                </button>
                 <button data-page="whatif" class="nav-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-semibold text-muted hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-main transition-all-200">
                     <i class="fa-solid fa-sliders w-5 text-center text-base"></i>
                     <div class="flex items-center justify-between w-full">
@@ -360,6 +368,32 @@
                     </div>
                 </div>
 
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Savings Goals overview (real data from /api/goals/summary) -->
+                <div id="dashboardGoalsCard" class="lg:col-span-2 bg-card p-6 rounded-2xl border border-theme shadow-sm space-y-4">
+                    <div class="flex items-center justify-between gap-2">
+                        <div>
+                            <h3 class="font-bold text-base text-main">Savings Goals</h3>
+                            <p class="text-xs text-muted">Progress across your goals</p>
+                        </div>
+                        <button onclick="navigateTo('savings')" class="text-xs font-bold text-brand-500 hover:text-brand-600 flex items-center gap-1">
+                            Manage <i class="fa-solid fa-arrow-right"></i>
+                        </button>
+                    </div>
+                    <div id="dashboardGoalsBody"><div class="h-20 bg-input rounded-xl animate-pulse"></div></div>
+                </div>
+
+                <!-- Financial Health Score (real data from /api/health-score) -->
+                <div id="dashboardHealthCard" class="bg-card p-6 rounded-2xl border border-theme shadow-sm space-y-4">
+                    <div>
+                        <h3 class="font-bold text-base text-main">Financial Health Score</h3>
+                        <p class="text-xs text-muted">Educational indicator</p>
+                    </div>
+                    <div id="dashboardHealthBody"><div class="h-20 bg-input rounded-xl animate-pulse"></div></div>
+                    <button onclick="navigateTo('health')" class="text-xs font-bold text-brand-500 hover:text-brand-600 flex items-center gap-1">View score breakdown <i class="fa-solid fa-arrow-right"></i></button>
+                </div>
+                </div>
+
                 <!-- Dashboard Lower Section: Recent Transactions & Smart Insights -->
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     <!-- Recent Transactions Widget -->
@@ -398,13 +432,14 @@
                             </div>
                             <div>
                                 <h3 class="font-bold text-base text-main">Smart Insights</h3>
-                                <p class="text-xs text-muted">FinTrack AI Analysis</p>
+                                <p class="text-xs text-muted">Rule-based, from your own data</p>
                             </div>
                         </div>
                         <div class="space-y-3" id="smartInsightsList">
                             <!-- Dynamic insight cards, derived from real budgets/goals data, injected via JS -->
-                            <p class="text-xs text-muted" id="smartInsightsEmpty">Add transactions, a budget and a savings goal to see insights here.</p>
+                            <div class="h-14 bg-input rounded-xl animate-pulse"></div>
                         </div>
+                        <button onclick="navigateTo('insights')" class="text-xs font-bold text-brand-500 hover:text-brand-600 flex items-center gap-1">View all insights <i class="fa-solid fa-arrow-right"></i></button>
                     </div>
                 </div>
             </section>
@@ -577,9 +612,29 @@
             <!-- PAGE 4: ANALYTICS & FORECASTING PAGE -->
             <section id="page-analytics" class="page-view hidden space-y-6">
                 <!-- Analytics Header -->
-                <div>
-                    <h1 class="text-2xl font-extrabold text-main">Analytics & Forecasts</h1>
-                    <p class="text-xs md:text-sm text-muted">Deep dive spending trends, projections, and monthly performance.</p>
+                <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-4">
+                    <div>
+                        <h1 class="text-2xl font-extrabold text-main">Analytics & Forecasts</h1>
+                        <p class="text-xs md:text-sm text-muted">Understand your spending, income and savings for any period.</p>
+                    </div>
+                    <!-- Time filter -->
+                    <div class="flex flex-wrap items-center gap-2 bg-card p-1.5 rounded-2xl border border-theme shadow-sm self-start lg:self-auto">
+                        <span class="text-xs font-semibold px-2 py-1 text-muted">Period:</span>
+                        <select id="analyticsPeriodSelect" class="bg-input text-xs font-bold text-main py-1.5 px-3 rounded-xl focus:outline-none border-none">
+                            <option value="this_month">This Month</option>
+                            <option value="last_month">Last Month</option>
+                            <option value="last_3_months">Last 3 Months</option>
+                            <option value="last_6_months">Last 6 Months</option>
+                            <option value="this_year">This Year</option>
+                            <option value="custom">Custom Range</option>
+                        </select>
+                        <div id="analyticsCustomRange" class="hidden flex flex-wrap items-center gap-2">
+                            <input type="date" id="analyticsStartDate" aria-label="Start date" class="bg-input text-xs font-semibold text-main py-1.5 px-2 rounded-xl focus:outline-none">
+                            <span class="text-xs text-muted">to</span>
+                            <input type="date" id="analyticsEndDate" aria-label="End date" class="bg-input text-xs font-semibold text-main py-1.5 px-2 rounded-xl focus:outline-none">
+                            <button id="analyticsApplyBtn" class="bg-brand-500 hover:bg-brand-600 text-white text-xs font-bold px-3 py-1.5 rounded-xl">Apply</button>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Spending Forecast Banner -->
@@ -589,7 +644,7 @@
                             <i class="fa-solid fa-crystal-ball"></i>
                         </div>
                         <div>
-                            <span class="text-xs font-bold text-accent-500 uppercase tracking-wider">Spending Forecast</span>
+                            <span class="text-xs font-bold text-accent-500 uppercase tracking-wider">Spending Forecast · Current Month</span>
                             <h3 class="text-xl font-extrabold text-main">Projected Monthly Spend: ৳<span id="forecastProjectedAmount">0</span></h3>
                             <p class="text-xs text-muted">Calculated based on current daily average spend of ৳<span id="forecastDailyAverage">0</span>/day across <span id="forecastDaysInMonth">30</span> days.</p>
                         </div>
@@ -599,24 +654,75 @@
                     </div>
                 </div>
 
-                <!-- Month-over-Month Comparison Grid -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <!-- Income vs Expense Bar Chart -->
-                    <div class="bg-card p-6 rounded-2xl border border-theme shadow-sm space-y-4">
-                        <h3 class="font-bold text-base text-main">Income vs Expense Comparison</h3>
-                        <div class="h-64 relative">
-                            <canvas id="incomeVsExpenseChart"></canvas>
+                <!-- Loading / error / empty states (content below is hidden while one of these shows) -->
+                <div id="analyticsState"></div>
+
+                <div id="analyticsContent" class="hidden space-y-6">
+                    <p id="analyticsRangeNote" class="text-xs text-muted"></p>
+
+                    <!-- Financial summary -->
+                    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4" id="analyticsSummaryCards"></div>
+
+                    <!-- Comparison with the previous equivalent period -->
+                    <div class="bg-card p-5 rounded-2xl border border-theme shadow-sm space-y-3">
+                        <div class="flex flex-wrap items-center justify-between gap-2">
+                            <h3 class="font-bold text-base text-main">Compared with the previous period</h3>
+                            <span id="analyticsPrevRange" class="text-[11px] text-muted"></span>
                         </div>
+                        <ul id="analyticsComparisonList" class="space-y-2 text-xs"></ul>
                     </div>
 
-                    <!-- Month-Over-Month Variance Breakdown -->
-                    <div class="bg-card p-6 rounded-2xl border border-theme shadow-sm space-y-4">
-                        <h3 class="font-bold text-base text-main">Month-over-Month Variance</h3>
-                        <div class="space-y-3" id="momVarianceList">
-                            <!-- Dynamic MoM items -->
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div class="bg-card p-5 rounded-2xl border border-theme shadow-sm space-y-3 min-w-0">
+                            <h3 class="font-bold text-base text-main">Income vs Expenses</h3>
+                            <div class="h-64 relative"><canvas id="incomeVsExpenseChart"></canvas></div>
+                        </div>
+                        <div class="bg-card p-5 rounded-2xl border border-theme shadow-sm space-y-3 min-w-0">
+                            <h3 class="font-bold text-base text-main" id="analyticsSpendingTrendTitle">Spending Trend</h3>
+                            <div class="h-64 relative"><canvas id="spendingTrendChart"></canvas></div>
+                        </div>
+                        <div class="bg-card p-5 rounded-2xl border border-theme shadow-sm space-y-3 min-w-0">
+                            <h3 class="font-bold text-base text-main">Savings Trend <span class="text-[11px] font-medium text-muted">(income − expenses)</span></h3>
+                            <div class="h-64 relative"><canvas id="savingsTrendChart"></canvas></div>
+                        </div>
+                        <div class="bg-card p-5 rounded-2xl border border-theme shadow-sm space-y-3 min-w-0">
+                            <h3 class="font-bold text-base text-main">Top Spending Categories</h3>
+                            <div id="analyticsTopCategories" class="space-y-3"></div>
+                        </div>
+                        <div class="bg-card p-5 rounded-2xl border border-theme shadow-sm space-y-3 min-w-0">
+                            <h3 class="font-bold text-base text-main">Expenses by Category</h3>
+                            <div class="h-56 relative"><canvas id="analyticsCategoryChart"></canvas></div>
+                            <div id="analyticsCategoryLegend" class="space-y-2 max-h-36 overflow-y-auto text-xs"></div>
+                        </div>
+                        <div class="bg-card p-5 rounded-2xl border border-theme shadow-sm space-y-3 min-w-0">
+                            <h3 class="font-bold text-base text-main">Income Distribution</h3>
+                            <div id="analyticsIncomeEmpty" class="hidden text-xs text-muted py-6 text-center">No income recorded in this period.</div>
+                            <div id="analyticsIncomeBox">
+                                <div class="h-56 relative"><canvas id="analyticsIncomeChart"></canvas></div>
+                                <div id="analyticsIncomeLegend" class="space-y-2 max-h-36 overflow-y-auto text-xs mt-3"></div>
+                            </div>
                         </div>
                     </div>
                 </div>
+            </section>
+
+            <!-- PAGE: FINANCIAL HEALTH SCORE -->
+            <section id="page-health" class="page-view hidden space-y-6">
+                <div>
+                    <h1 class="text-2xl font-extrabold text-main">Financial Health Score</h1>
+                    <p class="text-xs md:text-sm text-muted">A transparent 0-100 score calculated from your own transactions, budgets and savings goals. It is an educational indicator, not financial advice.</p>
+                </div>
+                <div id="healthPageBody"><div class="h-40 bg-input rounded-2xl animate-pulse"></div></div>
+            </section>
+
+            <!-- PAGE: SMART INSIGHTS -->
+            <section id="page-insights" class="page-view hidden space-y-6">
+                <div>
+                    <h1 class="text-2xl font-extrabold text-main">Smart Insights</h1>
+                    <p class="text-xs md:text-sm text-muted">Observations calculated from your transactions, budgets and savings goals using fixed rules (no AI or machine learning). Tap "Why?" on any insight to see the rule and numbers behind it.</p>
+                </div>
+                <p id="insightsPeriodNote" class="text-xs text-muted"></p>
+                <div id="insightsPageBody"><div class="h-24 bg-input rounded-2xl animate-pulse"></div></div>
             </section>
 
             <!-- PAGE 5: WHAT-IF ANALYSIS CALCULATOR -->
@@ -836,18 +942,27 @@
 
     <!-- SAVINGS GOAL DEPOSIT MODAL -->
     <div id="goalModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-card w-full max-w-sm rounded-2xl border border-theme shadow-2xl p-5 space-y-4">
-            <h3 class="font-extrabold text-base text-main">Add Money to Goal</h3>
+        <form id="goalContributionForm" class="bg-card w-full max-w-sm rounded-2xl border border-theme shadow-2xl p-5 space-y-4">
+            <h3 class="font-extrabold text-base text-main" id="goalContributionTitle">Add Money to Goal</h3>
             <input type="hidden" id="goalModalIndex"> <!-- holds the goal id -->
+            <p class="text-[11px] text-muted">Contributions are tracked on the goal only. They are not recorded as expenses or transactions.</p>
             <div>
-                <label class="block text-xs font-bold text-muted mb-1">Deposit Amount (৳)</label>
-                <input type="number" id="goalDepositAmount" placeholder="1000" class="w-full bg-input rounded-xl px-3.5 py-2.5 text-sm font-bold text-main border border-transparent focus:border-brand-500 focus:outline-none">
+                <label class="block text-xs font-bold text-muted mb-1">Amount (৳) *</label>
+                <input type="number" id="goalDepositAmount" step="0.01" min="0.01" required class="w-full bg-input rounded-xl px-3.5 py-2.5 text-sm text-main font-bold border border-transparent focus:border-brand-500 focus:outline-none">
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-muted mb-1">Date</label>
+                <input type="date" id="goalDepositDate" class="w-full bg-input rounded-xl px-3.5 py-2.5 text-sm text-main font-bold border border-transparent focus:border-brand-500 focus:outline-none">
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-muted mb-1">Note <span class="font-medium">optional</span></label>
+                <input type="text" id="goalDepositNote" maxlength="200" class="w-full bg-input rounded-xl px-3.5 py-2.5 text-sm text-main font-bold border border-transparent focus:border-brand-500 focus:outline-none font-semibold">
             </div>
             <div class="flex justify-end gap-2">
-                <button onclick="closeGoalModal()" class="px-4 py-2 rounded-xl text-xs font-semibold text-muted">Cancel</button>
-                <button onclick="saveGoalDeposit()" class="bg-brand-500 text-white text-xs font-bold px-4 py-2 rounded-xl">Deposit</button>
+                <button type="button" onclick="closeGoalModal()" class="px-4 py-2 rounded-xl text-xs font-semibold text-muted">Cancel</button>
+                <button type="submit" id="goalDepositBtn" class="bg-brand-500 text-white text-xs font-bold px-4 py-2 rounded-xl">Add Contribution</button>
             </div>
-        </div>
+        </form>
     </div>
 
     <!-- CREATE / EDIT BUDGET MODAL -->
@@ -891,16 +1006,36 @@
 
     <!-- CREATE / EDIT SAVINGS GOAL MODAL -->
     <div id="goalFormModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <form id="goalForm" class="bg-card w-full max-w-sm rounded-2xl border border-theme shadow-2xl p-5 space-y-4">
+        <form id="goalForm" class="bg-card w-full max-w-md max-h-[92vh] overflow-y-auto rounded-2xl border border-theme shadow-2xl p-5 space-y-4">
             <h3 class="font-extrabold text-base text-main" id="goalFormTitle">New Savings Goal</h3>
             <input type="hidden" id="goalFormId">
             <div>
                 <label class="block text-xs font-bold text-muted mb-1">Goal Name *</label>
-                <input type="text" id="goalFormName" required maxlength="100" placeholder="e.g. MacBook Pro" class="w-full bg-input rounded-xl px-3.5 py-2.5 text-sm text-main font-bold border border-transparent focus:border-brand-500 focus:outline-none">
+                <input type="text" id="goalFormName" required maxlength="100" placeholder="e.g. Buy a laptop" class="w-full bg-input rounded-xl px-3.5 py-2.5 text-sm text-main font-bold border border-transparent focus:border-brand-500 focus:outline-none">
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                    <label class="block text-xs font-bold text-muted mb-1">Target Amount (৳) *</label>
+                    <input type="number" id="goalFormTarget" step="0.01" min="0.01" required class="w-full bg-input rounded-xl px-3.5 py-2.5 text-sm text-main font-bold border border-transparent focus:border-brand-500 focus:outline-none">
+                </div>
+                <div id="goalFormSavedWrap">
+                    <label class="block text-xs font-bold text-muted mb-1">Already Saved (৳) <span class="font-medium">optional</span></label>
+                    <input type="number" id="goalFormSaved" step="0.01" min="0" placeholder="0" class="w-full bg-input rounded-xl px-3.5 py-2.5 text-sm text-main font-bold border border-transparent focus:border-brand-500 focus:outline-none">
+                </div>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                    <label class="block text-xs font-bold text-muted mb-1">Target Date <span class="font-medium">optional</span></label>
+                    <input type="date" id="goalFormDate" class="w-full bg-input rounded-xl px-3.5 py-2.5 text-sm text-main font-bold border border-transparent focus:border-brand-500 focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-muted mb-1">Category <span class="font-medium">optional</span></label>
+                    <input type="text" id="goalFormCategory" maxlength="50" placeholder="e.g. Education" class="w-full bg-input rounded-xl px-3.5 py-2.5 text-sm text-main font-bold border border-transparent focus:border-brand-500 focus:outline-none">
+                </div>
             </div>
             <div>
-                <label class="block text-xs font-bold text-muted mb-1">Target Amount (৳) *</label>
-                <input type="number" id="goalFormTarget" step="0.01" min="0.01" required placeholder="120000" class="w-full bg-input rounded-xl px-3.5 py-2.5 text-sm text-main font-bold border border-transparent focus:border-brand-500 focus:outline-none">
+                <label class="block text-xs font-bold text-muted mb-1">Description <span class="font-medium">optional</span></label>
+                <textarea id="goalFormDescription" rows="2" maxlength="500" class="w-full bg-input rounded-xl px-3.5 py-2.5 text-sm text-main font-bold border border-transparent focus:border-brand-500 focus:outline-none font-semibold"></textarea>
             </div>
             <div>
                 <label class="block text-xs font-bold text-muted mb-1">Icon</label>
@@ -919,6 +1054,17 @@
                 <button type="submit" class="bg-brand-500 text-white text-xs font-bold px-4 py-2 rounded-xl">Save Goal</button>
             </div>
         </form>
+    </div>
+
+    <!-- GOAL CONTRIBUTION HISTORY MODAL -->
+    <div id="goalHistoryModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-card w-full max-w-md max-h-[85vh] flex flex-col rounded-2xl border border-theme shadow-2xl p-5 space-y-3">
+            <div class="flex items-center justify-between">
+                <h3 class="font-extrabold text-base text-main" id="goalHistoryTitle">Contribution History</h3>
+                <button onclick="closeGoalHistory()" class="text-muted hover:text-main p-1" aria-label="Close"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div id="goalHistoryBody" class="overflow-y-auto space-y-2 text-xs"></div>
+        </div>
     </div>
 
     <!-- TOAST NOTIFICATION CONTAINER -->
@@ -1142,7 +1288,8 @@
                 const json = await api('/budgets/summary');
                 categoryBudgets = json.data.budgets;
                 renderBudgets(json.data);
-                renderSmartInsights();
+                scheduleInsightsReload();
+                scheduleHealthReload();
             } catch (err) {
                 grid.innerHTML = errorRetryBlock(err.message, 'loadBudgets');
                 showToast(err.message, 'error');
@@ -1153,12 +1300,17 @@
             const grid = document.getElementById('savingsGoalsGrid');
             grid.innerHTML = skeletonCards(3, 'h-48');
             try {
-                const json = await api('/goals');
+                const [json, summary] = await Promise.all([api('/goals'), api('/goals/summary')]);
                 savingsGoals = json.data.goals;
+                goalsSummary = summary.data;
                 renderSavingsGoals();
-                renderSmartInsights();
+                renderDashboardGoals();
+                scheduleInsightsReload();
+                scheduleHealthReload();
             } catch (err) {
                 grid.innerHTML = errorRetryBlock(err.message, 'loadGoals');
+                const dg = document.getElementById('dashboardGoalsBody');
+                if (dg) dg.innerHTML = errorRetryBlock(err.message, 'loadGoals');
                 showToast(err.message, 'error');
             }
         }
@@ -1185,22 +1337,231 @@
             }
         }
 
-        // Analytics page: trailing monthly trend + spending forecast
-        async function loadAnalytics() {
+        // ===== ANALYTICS PAGE =====
+        // Everything on this page comes from GET /api/analytics/overview (aggregated by the
+        // database for the logged-in user) - the browser never downloads raw transactions for it.
+        let analyticsData = null;
+        let analyticsRequestId = 0; // so a slow, older response can't overwrite a newer one
+        const analyticsCharts = {};
+
+        async function loadForecast() {
             const forecastCard = document.getElementById('forecastCard');
             if (forecastCard) forecastCard.classList.add('animate-pulse');
             try {
-                const [monthlyRes, forecastRes] = await Promise.all([
-                    api('/analytics/monthly'),
-                    api('/analytics/forecast'),
-                ]);
-                updateIncomeExpenseChart(monthlyRes.data);
-                renderForecast(forecastRes.data);
+                const res = await api('/analytics/forecast');
+                renderForecast(res.data);
             } catch (err) {
                 showToast(err.message, 'error');
             } finally {
                 if (forecastCard) forecastCard.classList.remove('animate-pulse');
             }
+        }
+
+        function analyticsStateBox(icon, title, text, actionsHtml = '') {
+            return `<div class="bg-card p-8 rounded-2xl border border-theme shadow-sm text-center space-y-3">
+                <div class="w-12 h-12 mx-auto rounded-2xl bg-input text-muted flex items-center justify-center text-xl"><i class="fa-solid ${icon}"></i></div>
+                <h3 class="font-extrabold text-base text-main">${title}</h3>
+                <p class="text-xs text-muted max-w-md mx-auto">${text}</p>
+                ${actionsHtml}
+            </div>`;
+        }
+        const addTxButton = '<button onclick="openTransactionModal()" class="btn-primary bg-brand-500 hover:bg-brand-600 text-white font-semibold px-4 py-2.5 rounded-xl text-xs inline-flex items-center gap-2 shadow-md shadow-brand-500/20"><i class="fa-solid fa-plus"></i> Add Transaction</button>';
+
+        async function loadAnalytics() {
+            loadForecast();
+
+            const state = document.getElementById('analyticsState');
+            const content = document.getElementById('analyticsContent');
+            const period = document.getElementById('analyticsPeriodSelect').value;
+            let qs = `period=${period}`;
+
+            if (period === 'custom') {
+                const s = document.getElementById('analyticsStartDate').value;
+                const e = document.getElementById('analyticsEndDate').value;
+                if (!s || !e) {
+                    content.classList.add('hidden');
+                    state.innerHTML = analyticsStateBox('fa-calendar-days', 'Choose a date range', 'Pick a start and an end date, then press Apply.');
+                    return;
+                }
+                if (e < s) { showToast('End date must be on or after the start date', 'error'); return; }
+                qs += `&startDate=${s}&endDate=${e}`;
+            }
+
+            const reqId = ++analyticsRequestId;
+            if (analyticsData) {
+                content.classList.add('opacity-60'); // refresh in place, no flicker
+            } else {
+                content.classList.add('hidden');
+                state.innerHTML = '<div class="grid grid-cols-2 lg:grid-cols-4 gap-4">' + skeletonCards(4, 'h-24') + '</div>';
+            }
+
+            try {
+                const res = await api(`/analytics/overview?${qs}`);
+                if (reqId !== analyticsRequestId) return;
+                analyticsData = res.data;
+                renderAnalytics();
+            } catch (err) {
+                if (reqId !== analyticsRequestId) return;
+                analyticsData = null;
+                content.classList.add('hidden');
+                state.innerHTML = analyticsStateBox('fa-triangle-exclamation', 'Could not load analytics', escapeHtml(err.message),
+                    '<button onclick="loadAnalytics()" class="bg-input hover:bg-slate-200 dark:hover:bg-slate-700 text-main text-xs font-bold px-4 py-2 rounded-xl">Try again</button>');
+            } finally {
+                if (reqId === analyticsRequestId) content.classList.remove('opacity-60');
+            }
+        }
+
+        function chartPalette() {
+            const css = getComputedStyle(document.body);
+            return { text: css.getPropertyValue('--text-muted').trim() || '#64748B', grid: 'rgba(148, 163, 184, 0.15)' };
+        }
+
+        function setAnalyticsChart(key, canvasId, config) {
+            if (analyticsCharts[key]) analyticsCharts[key].destroy();
+            const pal = chartPalette();
+            Chart.defaults.color = pal.text;
+            Chart.defaults.font.family = 'Plus Jakarta Sans';
+            analyticsCharts[key] = new Chart(document.getElementById(canvasId).getContext('2d'), config);
+        }
+
+        const moneyAxis = (v) => (Math.abs(v) >= 1000 ? `${v / 1000}k` : v);
+        const moneyTooltip = { callbacks: { label: (ctx) => ` ${ctx.dataset.label || ctx.label}: ৳${fmt(ctx.parsed.y ?? ctx.parsed)}` } };
+
+        function comparisonLine(c) {
+            if (!c.sufficient) return `<li class="flex gap-2 text-muted"><i class="fa-solid fa-circle-info mt-0.5"></i><span>${escapeHtml(c.message)}</span></li>`;
+            const color = c.favourable === null ? 'text-muted' : c.favourable ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400';
+            const icon = c.direction === 'up' ? 'fa-arrow-trend-up' : c.direction === 'down' ? 'fa-arrow-trend-down' : 'fa-minus';
+            return `<li class="flex gap-2 ${color}"><i class="fa-solid ${icon} mt-0.5"></i><span class="text-main">${escapeHtml(c.message)}</span></li>`;
+        }
+
+        function renderAnalytics() {
+            const d = analyticsData;
+            const state = document.getElementById('analyticsState');
+            const content = document.getElementById('analyticsContent');
+            if (!d) return;
+
+            if (!d.hasAnyTransactions) {
+                content.classList.add('hidden');
+                state.innerHTML = analyticsStateBox('fa-chart-simple', 'No analytics yet',
+                    'Analytics are generated from your transactions. Add your first income or expense to see charts, trends and comparisons here.', addTxButton);
+                return;
+            }
+            if (!d.hasData) {
+                content.classList.add('hidden');
+                state.innerHTML = analyticsStateBox('fa-calendar-xmark', `No transactions in this period`,
+                    `You have no transactions between ${d.range.start} and ${d.range.end}. Try another period, or add a transaction.`, addTxButton);
+                return;
+            }
+
+            state.innerHTML = '';
+            content.classList.remove('hidden');
+            const s = d.summary;
+            document.getElementById('analyticsRangeNote').innerText =
+                `${d.label}: ${d.range.start} to ${d.range.end} · ${d.transactionCount} transaction${d.transactionCount === 1 ? '' : 's'}`;
+
+            // Summary cards
+            const delta = (c) => {
+                if (!c.sufficient) return '<span class="text-muted">No previous data</span>';
+                if (c.direction === 'flat') return '<span class="text-muted">No change</span>';
+                const col = c.favourable ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400';
+                const txt = c.changePercent === null ? `${c.change > 0 ? '+' : '−'}৳${fmt(Math.abs(c.change))}` : `${c.change > 0 ? '+' : '−'}${Math.abs(c.changePercent)}%`;
+                return `<span class="${col} font-bold">${txt}</span> <span class="text-muted">vs previous</span>`;
+            };
+            const card = (label, value, sub, valueClass = 'text-main') => `
+                <div class="bg-card p-4 rounded-2xl border border-theme shadow-sm min-w-0">
+                    <span class="text-[11px] font-bold text-muted uppercase tracking-wide">${label}</span>
+                    <p class="text-lg md:text-xl font-extrabold ${valueClass} truncate">${value}</p>
+                    <p class="text-[11px] mt-1">${sub}</p>
+                </div>`;
+            document.getElementById('analyticsSummaryCards').innerHTML =
+                card('Income', `৳${fmt(s.income)}`, delta(d.comparison.income), 'text-emerald-600 dark:text-emerald-400') +
+                card('Expenses', `৳${fmt(s.expense)}`, delta(d.comparison.expense), 'text-rose-600 dark:text-rose-400') +
+                card('Savings', `${s.savings < 0 ? '−' : ''}৳${fmt(Math.abs(s.savings))}`, delta(d.comparison.savings), s.savings < 0 ? 'text-rose-600 dark:text-rose-400' : 'text-main') +
+                card('Savings Rate', s.savingsRate === null ? 'N/A' : `${s.savingsRate}%`,
+                    s.savingsRate === null ? '<span class="text-muted">No income in this period</span>'
+                        : (d.previousSummary && d.previousSummary.savingsRate !== null ? `<span class="text-muted">Previous: ${d.previousSummary.savingsRate}%</span>` : '<span class="text-muted">No previous data</span>'));
+
+            // Comparison list
+            document.getElementById('analyticsPrevRange').innerText = `Previous period: ${d.previousRange.start} to ${d.previousRange.end}`;
+            document.getElementById('analyticsComparisonList').innerHTML =
+                [d.comparison.income, d.comparison.expense, d.comparison.savings].map(comparisonLine).join('') +
+                d.comparison.categories.map((c) => `<li class="flex gap-2 text-muted"><i class="fa-solid fa-tag mt-0.5"></i><span class="text-main">${escapeHtml(c.message)}</span></li>`).join('');
+
+            // Charts
+            const pal = chartPalette();
+            const labels = d.series.map((p) => p.label);
+            const axes = {
+                x: { grid: { display: false }, ticks: { maxTicksLimit: 8, maxRotation: 0 } },
+                y: { grid: { color: pal.grid }, ticks: { callback: moneyAxis } },
+            };
+            const base = { responsive: true, maintainAspectRatio: false };
+
+            setAnalyticsChart('incExp', 'incomeVsExpenseChart', {
+                type: 'bar',
+                data: { labels, datasets: [
+                    { label: 'Income', data: d.series.map((p) => p.income), backgroundColor: '#10B981', borderRadius: 4 },
+                    { label: 'Expenses', data: d.series.map((p) => p.expense), backgroundColor: '#EF4444', borderRadius: 4 },
+                ] },
+                options: { ...base, plugins: { legend: { position: 'top' }, tooltip: moneyTooltip }, scales: axes },
+            });
+
+            document.getElementById('analyticsSpendingTrendTitle').innerText = d.granularity === 'month' ? 'Monthly Spending Trend' : 'Daily Spending Trend';
+            setAnalyticsChart('trend', 'spendingTrendChart', {
+                type: 'line',
+                data: { labels, datasets: [{ label: 'Expenses', data: d.series.map((p) => p.expense), borderColor: '#EF4444', backgroundColor: 'rgba(239, 68, 68, 0.1)', fill: true, tension: 0.3, borderWidth: 2, pointRadius: d.series.length > 40 ? 0 : 3 }] },
+                options: { ...base, plugins: { legend: { display: false }, tooltip: moneyTooltip }, scales: axes },
+            });
+
+            setAnalyticsChart('savings', 'savingsTrendChart', {
+                type: 'bar',
+                data: { labels, datasets: [{ label: 'Savings', data: d.series.map((p) => p.savings), backgroundColor: d.series.map((p) => (p.savings >= 0 ? '#10B981' : '#EF4444')), borderRadius: 4 }] },
+                options: { ...base, plugins: { legend: { display: false }, tooltip: moneyTooltip }, scales: axes },
+            });
+
+            const donut = (key, canvasId, legendId, rows) => {
+                setAnalyticsChart(key, canvasId, {
+                    type: 'doughnut',
+                    data: { labels: rows.map((c) => c.category), datasets: [{ data: rows.map((c) => c.amount), backgroundColor: rows.map((_, i) => CATEGORY_COLORS[i % CATEGORY_COLORS.length]), borderWidth: 0 }] },
+                    options: { ...base, cutout: '65%', plugins: { legend: { display: false }, tooltip: { callbacks: { label: (ctx) => ` ${ctx.label}: ৳${fmt(ctx.parsed)}` } } } },
+                });
+                document.getElementById(legendId).innerHTML = rows.map((c, i) => `
+                    <div class="flex items-center justify-between gap-2">
+                        <div class="flex items-center gap-2 min-w-0"><span class="w-2.5 h-2.5 rounded-full shrink-0" style="background-color:${CATEGORY_COLORS[i % CATEGORY_COLORS.length]}"></span><span class="text-main truncate">${escapeHtml(c.category)}</span></div>
+                        <span class="font-bold text-muted shrink-0">৳${fmt(c.amount)} (${c.percentage}%)</span>
+                    </div>`).join('');
+            };
+            if (d.expenseCategories.length) donut('cat', 'analyticsCategoryChart', 'analyticsCategoryLegend', d.expenseCategories);
+            else { if (analyticsCharts.cat) { analyticsCharts.cat.destroy(); delete analyticsCharts.cat; } document.getElementById('analyticsCategoryLegend').innerHTML = '<p class="text-muted">No expenses in this period.</p>'; }
+
+            const hasIncome = d.incomeCategories.length > 0;
+            document.getElementById('analyticsIncomeBox').classList.toggle('hidden', !hasIncome);
+            document.getElementById('analyticsIncomeEmpty').classList.toggle('hidden', hasIncome);
+            if (hasIncome) donut('inc', 'analyticsIncomeChart', 'analyticsIncomeLegend', d.incomeCategories);
+            else if (analyticsCharts.inc) { analyticsCharts.inc.destroy(); delete analyticsCharts.inc; }
+
+            // Top spending categories
+            const top = document.getElementById('analyticsTopCategories');
+            top.innerHTML = d.topCategories.length === 0 ? '<p class="text-xs text-muted">No expenses in this period.</p>' : d.topCategories.map((c, i) => `
+                <div class="space-y-1">
+                    <div class="flex justify-between text-xs"><span class="font-bold text-main">${i + 1}. ${escapeHtml(c.category)}</span><span class="text-muted">৳${fmt(c.amount)} · ${c.percentage}%</span></div>
+                    <div class="w-full h-2 bg-input rounded-full overflow-hidden"><div class="h-full rounded-full" style="width:${c.percentage}%;background-color:${CATEGORY_COLORS[i % CATEGORY_COLORS.length]}"></div></div>
+                </div>`).join('');
+        }
+
+        function initAnalyticsControls() {
+            const sel = document.getElementById('analyticsPeriodSelect');
+            const range = document.getElementById('analyticsCustomRange');
+            sel.addEventListener('change', () => {
+                range.classList.toggle('hidden', sel.value !== 'custom');
+                if (sel.value === 'custom') {
+                    const s = document.getElementById('analyticsStartDate');
+                    const e = document.getElementById('analyticsEndDate');
+                    if (!e.value) e.value = isoToday();
+                    if (!s.value) { const t = new Date(); s.value = toIsoDate(new Date(t.getFullYear(), t.getMonth(), 1)); }
+                }
+                loadAnalytics();
+            });
+            document.getElementById('analyticsApplyBtn').addEventListener('click', loadAnalytics);
         }
 
         // Notification bell
@@ -1243,13 +1604,12 @@
         // Goes back to page 1 too - the page the user was on may no longer exist after a delete.
         function refreshFinanceData() {
             txCurrentPage = 1;
-            return Promise.all([loadTransactions(), loadDashboard(), loadBudgets(), loadAnalytics(), loadNotifications()]);
+            return Promise.all([loadTransactions(), loadDashboard(), loadBudgets(), loadAnalytics(), loadNotifications(), (scheduleInsightsReload(), scheduleHealthReload(), Promise.resolve())]);
         }
 
         // Chart Instances
         let overviewChartInstance = null;
         let categoryChartInstance = null;
-        let incomeVsExpenseChartInstance = null;
 
         window.addEventListener('DOMContentLoaded', () => {
             loadCurrentUser();
@@ -1258,6 +1618,7 @@
             initNavigation();
             initTheme();
             initCharts();
+            initAnalyticsControls();
             initWhatIfCalculator();
 
             // Load real data from the API (refreshFinanceData also covers analytics + notifications)
@@ -1268,6 +1629,7 @@
             document.getElementById('txForm').addEventListener('submit', handleTxFormSubmit);
             document.getElementById('budgetForm').addEventListener('submit', handleBudgetFormSubmit);
             document.getElementById('goalForm').addEventListener('submit', handleGoalFormSubmit);
+            document.getElementById('goalContributionForm').addEventListener('submit', saveGoalDeposit);
 
             // Global Filter Listeners (filtering/sorting/searching is done by the API).
             // Any filter change goes back to page 1 - staying on page 3 of a now-different result set would be confusing.
@@ -1336,7 +1698,7 @@
 
                     // Trigger Chart Resize if needed
                     if(targetPage === 'dashboard' && overviewChartInstance) overviewChartInstance.resize();
-                    if(targetPage === 'analytics' && incomeVsExpenseChartInstance) incomeVsExpenseChartInstance.resize();
+                    if(targetPage === 'analytics') Object.values(analyticsCharts).forEach(c => c.resize());
                 });
             });
 
@@ -1470,14 +1832,6 @@
             `).join('');
         }
 
-        function updateIncomeExpenseChart(monthlyData) {
-            if (!incomeVsExpenseChartInstance) return;
-            incomeVsExpenseChartInstance.data.labels = monthlyData.map(m => m.label);
-            incomeVsExpenseChartInstance.data.datasets[0].data = monthlyData.map(m => m.income);
-            incomeVsExpenseChartInstance.data.datasets[1].data = monthlyData.map(m => m.expense);
-            incomeVsExpenseChartInstance.update();
-        }
-
         function renderForecast(data) {
             document.getElementById('forecastProjectedAmount').innerText = fmt(data.projectedAmount);
             document.getElementById('forecastDailyAverage').innerText = fmt(data.dailyAverage);
@@ -1486,64 +1840,247 @@
             document.getElementById('forecastReliability').innerText = `${label} (${data.reliability}%)`;
         }
 
-        // Derives real, data-backed insight cards from whatever budgets/goals have loaded so far.
+        // ===== FINANCIAL HEALTH SCORE =====
+        // The score, every component's points and its explanation come from GET /api/health-score
+        // (one backend service). This code only displays them.
+        let healthData = null;
+        let healthTimer = null;
+        let healthRequestId = 0;
+        let healthHistoryChart = null;
+
+        function scheduleHealthReload() {
+            clearTimeout(healthTimer);
+            healthTimer = setTimeout(loadHealthScore, 150);
+        }
+
+        const HEALTH_LEVEL_STYLE = {
+            'Excellent': { color: '#10B981', text: 'text-emerald-600 dark:text-emerald-400' },
+            'Good': { color: '#3B82F6', text: 'text-blue-600 dark:text-blue-400' },
+            'Fair': { color: '#F59E0B', text: 'text-amber-600 dark:text-amber-400' },
+            'Needs Improvement': { color: '#EF4444', text: 'text-rose-600 dark:text-rose-400' },
+        };
+
+        async function loadHealthScore() {
+            const reqId = ++healthRequestId;
+            try {
+                const res = await api('/health-score');
+                if (reqId !== healthRequestId) return;
+                healthData = res.data;
+                renderHealthDashboard();
+                renderHealthPage();
+            } catch (err) {
+                if (reqId !== healthRequestId) return;
+                healthData = null;
+                const msg = `<p class="text-xs text-muted">${escapeHtml(err.message)}</p><button onclick="loadHealthScore()" class="mt-2 bg-input text-main text-xs font-bold px-3 py-1.5 rounded-xl">Try again</button>`;
+                document.getElementById('dashboardHealthBody').innerHTML = msg;
+                document.getElementById('healthPageBody').innerHTML = `<div class="bg-card p-6 rounded-2xl border border-theme">${msg}</div>`;
+            }
+        }
+
+        // Circular gauge: the ring fills score% of the circle.
+        function healthGauge(score, level, size) {
+            const st = HEALTH_LEVEL_STYLE[level];
+            const r = 42; const c = 2 * Math.PI * r;
+            return `<div class="relative shrink-0" style="width:${size}px;height:${size}px" role="img" aria-label="Financial health score ${score} out of 100, ${level}">
+                <svg viewBox="0 0 100 100" class="w-full h-full -rotate-90">
+                    <circle cx="50" cy="50" r="${r}" fill="none" stroke="var(--input-bg)" stroke-width="10"></circle>
+                    <circle cx="50" cy="50" r="${r}" fill="none" stroke="${st.color}" stroke-width="10" stroke-linecap="round" stroke-dasharray="${c}" stroke-dashoffset="${c * (1 - score / 100)}"></circle>
+                </svg>
+                <div class="absolute inset-0 flex flex-col items-center justify-center">
+                    <span class="font-extrabold text-main" style="font-size:${size * 0.28}px;line-height:1">${score}</span>
+                    <span class="text-[10px] text-muted font-semibold">/ 100</span>
+                </div>
+            </div>`;
+        }
+
+        function renderHealthDashboard() {
+            const body = document.getElementById('dashboardHealthBody');
+            const d = healthData;
+            if (!d) return;
+            if (!d.available) {
+                body.innerHTML = `<p class="text-sm font-bold text-main">${escapeHtml(d.message)}</p><p class="text-xs text-muted mt-1">${escapeHtml(d.requirement || '')}</p>`;
+                return;
+            }
+            const st = HEALTH_LEVEL_STYLE[d.level];
+            body.innerHTML = `<div class="flex items-center gap-4">
+                ${healthGauge(d.score, d.level, 96)}
+                <div class="min-w-0">
+                    <p class="font-extrabold text-lg ${st.text}">${d.level}</p>
+                    <p class="text-xs text-muted">${d.partial ? `Based on ${d.basedOn.componentsEvaluated} of 5 components` : 'Based on all 5 components'}</p>
+                </div>
+            </div>`;
+        }
+
+        function renderHealthPage() {
+            const body = document.getElementById('healthPageBody');
+            const d = healthData;
+            if (!d) return;
+            if (healthHistoryChart) { healthHistoryChart.destroy(); healthHistoryChart = null; }
+
+            const componentRow = (c) => {
+                if (!c.eligible) {
+                    return `<div class="p-4 rounded-xl bg-input space-y-1">
+                        <div class="flex items-center justify-between gap-2"><span class="font-bold text-sm text-main">${escapeHtml(c.name)}</span><span class="text-[11px] font-bold text-muted shrink-0">Not evaluated yet · ${c.maxPoints} pts not counted</span></div>
+                        <p class="text-xs text-muted">${escapeHtml(c.explanation)}</p>
+                        <p class="text-xs text-main"><i class="fa-solid fa-unlock text-muted"></i> ${escapeHtml(c.suggestion)}</p>
+                    </div>`;
+                }
+                const pct = Math.round((c.earned / c.maxPoints) * 100);
+                const color = pct >= 80 ? '#10B981' : pct > 50 ? '#F59E0B' : '#EF4444';
+                return `<div class="p-4 rounded-xl bg-input space-y-2">
+                    <div class="flex items-center justify-between gap-2"><span class="font-bold text-sm text-main">${escapeHtml(c.name)}</span><span class="text-sm font-extrabold text-main shrink-0">${c.earned} / ${c.maxPoints}</span></div>
+                    <div class="w-full h-2 bg-card rounded-full overflow-hidden"><div class="h-full rounded-full" style="width:${pct}%;background-color:${color}"></div></div>
+                    <p class="text-xs text-main">${escapeHtml(c.explanation)}</p>
+                    <p class="text-xs text-muted"><i class="fa-solid fa-lightbulb"></i> ${escapeHtml(c.suggestion)}</p>
+                </div>`;
+            };
+            const list = (items, empty) => items.length ? '<ul class="space-y-2 text-xs">' + items.map((i) => `<li class="text-main">${i.name ? `<span class="font-bold">${escapeHtml(i.name)}:</span> ` : ''}${escapeHtml(i.text)}</li>`).join('') + '</ul>' : `<p class="text-xs text-muted">${empty}</p>`;
+            const NAME_BY_KEY = Object.fromEntries(d.components.map((c) => [c.key, c.name]));
+            const disclaimer = `<p class="text-[11px] text-muted">${escapeHtml(d.disclaimer)}</p>`;
+
+            if (!d.available) {
+                body.innerHTML = `<div class="space-y-6">
+                    ${analyticsStateBox('fa-heart-pulse', escapeHtml(d.message), escapeHtml(d.requirement || ''), addTxButton)}
+                    <div class="bg-card p-5 rounded-2xl border border-theme shadow-sm space-y-3">
+                        <h3 class="font-bold text-base text-main">What the score needs</h3>
+                        <p class="text-xs text-muted">Each part is measured only when you have the data for it. Nothing is scored as zero just because it is missing.</p>
+                        <div class="space-y-3">${d.components.map(componentRow).join('')}</div>
+                    </div>
+                    ${disclaimer}
+                </div>`;
+                return;
+            }
+
+            const st = HEALTH_LEVEL_STYLE[d.level];
+            body.innerHTML = `<div class="space-y-6">
+                <div class="bg-card p-6 rounded-2xl border border-theme shadow-sm flex flex-col sm:flex-row items-center gap-6">
+                    ${healthGauge(d.score, d.level, 160)}
+                    <div class="text-center sm:text-left space-y-2 min-w-0">
+                        <p class="text-2xl font-extrabold ${st.text}">${d.level}</p>
+                        <p class="text-xs text-muted">Score bands: 80-100 Excellent · 60-79 Good · 40-59 Fair · 0-39 Needs Improvement</p>
+                        <p class="text-xs text-main">${d.partial
+                            ? `Based on <b>${d.basedOn.componentsEvaluated} of 5</b> components. Score = ${d.basedOn.earnedPoints} earned ÷ ${d.basedOn.evaluablePoints} measurable points × 100. Parts without enough data are left out, not counted as zero.`
+                            : `Based on all 5 components: ${d.basedOn.earnedPoints} of 100 points.`}</p>
+                        ${disclaimer}
+                    </div>
+                </div>
+                <div class="bg-card p-5 rounded-2xl border border-theme shadow-sm space-y-3">
+                    <h3 class="font-bold text-base text-main">Score breakdown</h3>
+                    <div class="space-y-3">${d.components.map(componentRow).join('')}</div>
+                </div>
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="bg-card p-5 rounded-2xl border border-theme shadow-sm space-y-3"><h3 class="font-bold text-base text-main"><i class="fa-solid fa-circle-check text-emerald-500"></i> Strengths</h3>${list(d.strengths, 'No standout strengths yet.')}</div>
+                    <div class="bg-card p-5 rounded-2xl border border-theme shadow-sm space-y-3"><h3 class="font-bold text-base text-main"><i class="fa-solid fa-arrow-trend-up text-amber-500"></i> Areas to improve</h3>${list(d.improvements, 'Nothing is scoring low right now.')}</div>
+                    <div class="bg-card p-5 rounded-2xl border border-theme shadow-sm space-y-3"><h3 class="font-bold text-base text-main"><i class="fa-solid fa-lightbulb text-accent-500"></i> Suggestions</h3>${list(d.suggestions.map((x) => ({ name: NAME_BY_KEY[x.key], text: x.text })), 'No suggestions right now.')}</div>
+                </div>
+                <div class="bg-card p-5 rounded-2xl border border-theme shadow-sm space-y-3">
+                    <h3 class="font-bold text-base text-main">Score history</h3>
+                    ${d.history.length ? '<p class="text-xs text-muted">Each point is the score recalculated from the data that existed at the end of that month. Months without enough data are not shown.</p><div class="h-56 relative"><canvas id="healthHistoryChart"></canvas></div>'
+                        : `<p class="text-xs text-muted">${escapeHtml(d.historyMessage || '')}</p>`}
+                </div>
+            </div>`;
+
+            if (d.history.length) {
+                Chart.defaults.color = chartPalette().text;
+                healthHistoryChart = new Chart(document.getElementById('healthHistoryChart').getContext('2d'), {
+                    type: 'line',
+                    data: { labels: d.history.map((p) => p.label), datasets: [{ label: 'Score', data: d.history.map((p) => p.score), borderColor: '#6366F1', backgroundColor: 'rgba(99,102,241,0.1)', fill: true, tension: 0.25, borderWidth: 2, pointRadius: 4 }] },
+                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { callbacks: { afterLabel: (ctx) => `${d.history[ctx.dataIndex].level} · ${d.history[ctx.dataIndex].componentsEvaluated} components` } } },
+                        scales: { y: { min: 0, max: 100, grid: { color: 'rgba(148,163,184,0.15)' } }, x: { grid: { display: false } } } },
+                });
+            }
+        }
+
+        // ===== SMART INSIGHTS =====
+        // All insight logic lives in the backend (GET /api/insights). This code only displays what it returns.
+        let insightsData = null;
+        let insightsTimer = null;
+        let insightsRequestId = 0;
+
+        // Called after anything that can change insights (transactions, budgets, goals). Debounced so a
+        // refresh that touches several of them results in one request.
+        function scheduleInsightsReload() {
+            clearTimeout(insightsTimer);
+            insightsTimer = setTimeout(loadInsights, 150);
+        }
+
+        async function loadInsights() {
+            const reqId = ++insightsRequestId;
+            try {
+                const res = await api('/insights');
+                if (reqId !== insightsRequestId) return;
+                insightsData = res.data;
+                renderSmartInsights();
+                renderInsightsPage();
+            } catch (err) {
+                if (reqId !== insightsRequestId) return;
+                insightsData = null;
+                const msg = `<p class="text-xs text-muted">${escapeHtml(err.message)}</p><button onclick="loadInsights()" class="mt-2 bg-input text-main text-xs font-bold px-3 py-1.5 rounded-xl">Try again</button>`;
+                document.getElementById('smartInsightsList').innerHTML = msg;
+                document.getElementById('insightsPageBody').innerHTML = `<div class="bg-card p-6 rounded-2xl border border-theme">${msg}</div>`;
+            }
+        }
+
+        const INSIGHT_STYLE = {
+            alert:      { icon: 'fa-circle-exclamation', box: 'bg-rose-500/10 border-rose-500/20', text: 'text-rose-600 dark:text-rose-400' },
+            warning:    { icon: 'fa-triangle-exclamation', box: 'bg-amber-500/10 border-amber-500/20', text: 'text-amber-600 dark:text-amber-400' },
+            positive:   { icon: 'fa-circle-check', box: 'bg-emerald-500/10 border-emerald-500/20', text: 'text-emerald-600 dark:text-emerald-400' },
+            info:       { icon: 'fa-circle-info', box: 'bg-brand-500/10 border-brand-500/20', text: 'text-brand-600 dark:text-brand-400' },
+            suggestion: { icon: 'fa-lightbulb', box: 'bg-accent-500/10 border-accent-500/20', text: 'text-accent-500' },
+        };
+        const INSIGHT_ORDER = { alert: 0, warning: 1, positive: 2, info: 3, suggestion: 4 };
+        const INSIGHT_GROUPS = [
+            ['spending', 'Spending', 'fa-cart-shopping'],
+            ['budget', 'Budget', 'fa-bullseye'],
+            ['savings', 'Savings', 'fa-piggy-bank'],
+            ['habits', 'Financial Habits', 'fa-repeat'],
+            ['recommendations', 'Recommendations', 'fa-lightbulb'],
+        ];
+
+        function insightCard(i, withReason) {
+            const st = INSIGHT_STYLE[i.type] || INSIGHT_STYLE.info;
+            return `<div class="p-3 rounded-xl ${st.box} border space-y-1">
+                <div class="flex items-start gap-2 ${st.text} font-bold text-xs"><i class="fa-solid ${st.icon} mt-0.5"></i><span>${escapeHtml(i.title)}</span></div>
+                <p class="text-xs text-main">${escapeHtml(i.message)}</p>
+                ${withReason ? `<details class="text-[11px] text-muted"><summary class="cursor-pointer font-semibold">Why?</summary><p class="mt-1">${escapeHtml(i.reason)}</p></details>` : ''}
+            </div>`;
+        }
+
+        // Dashboard panel: the few most important insights (alerts/warnings first).
         function renderSmartInsights() {
             const list = document.getElementById('smartInsightsList');
-            const cards = [];
-
-            if (categoryBudgets.length > 0) {
-                const worst = [...categoryBudgets].sort((a, b) => b.percentage - a.percentage)[0];
-                // Same 0-69/70-89/90-100/>100 tiers as the Budgets page - only warning-and-up gets an insight card.
-                const tier = worst.isOverBudget ? 'over' : worst.percentage >= 90 ? 'critical' : worst.percentage >= 70 ? 'warning' : null;
-                const TIER_COPY = {
-                    warning: { emoji: '⚠️', label: 'Budget Warning', bg: 'bg-amber-500/10 border-amber-500/20', text: 'text-amber-600 dark:text-amber-400' },
-                    critical: { emoji: '🔶', label: 'Budget Critical', bg: 'bg-orange-500/10 border-orange-500/20', text: 'text-orange-600 dark:text-orange-400' },
-                    over: { emoji: '🚨', label: 'Budget Exceeded', bg: 'bg-rose-500/10 border-rose-500/20', text: 'text-rose-600 dark:text-rose-400' },
-                };
-                if (tier) {
-                    const t = TIER_COPY[tier];
-                    cards.push(`
-                        <div class="p-3 rounded-xl ${t.bg} border space-y-1">
-                            <div class="flex items-center justify-between ${t.text} font-bold text-xs">
-                                <span>${t.emoji} ${t.label}</span>
-                                <span>${worst.percentage}% Used</span>
-                            </div>
-                            <p class="text-xs text-main">${escapeHtml(worst.category)} expense reached ৳${fmt(worst.spent)} vs budget ৳${fmt(worst.limit)}.${tier === 'over' ? ` Over budget by ৳${fmt(worst.overBy)}!` : ''}</p>
-                        </div>
-                    `);
-                }
+            if (!insightsData) return;
+            if (!insightsData.sufficient) {
+                list.innerHTML = `<p class="text-xs text-muted">${escapeHtml(insightsData.message)}</p>`;
+                return;
             }
+            const top = [...insightsData.insights].sort((x, y) => INSIGHT_ORDER[x.type] - INSIGHT_ORDER[y.type]).slice(0, 4);
+            list.innerHTML = top.length ? top.map((i) => insightCard(i, false)).join('') : `<p class="text-xs text-muted">${escapeHtml(insightsData.message)}</p>`;
+        }
 
-            const spikes = categoryBudgets.filter(b => b.momChangePercent > 15).sort((a, b) => b.momChangePercent - a.momChangePercent);
-            if (spikes.length > 0) {
-                const s = spikes[0];
-                cards.push(`
-                    <div class="p-3 rounded-xl bg-brand-500/10 border border-brand-500/20 space-y-1">
-                        <div class="flex items-center justify-between text-brand-600 dark:text-brand-400 font-bold text-xs">
-                            <span>💡 Spending Spike</span>
-                            <span>+${s.momChangePercent}% ${escapeHtml(s.category)}</span>
-                        </div>
-                        <p class="text-xs text-main">Your ${escapeHtml(s.category)} spending increased by ${s.momChangePercent}% compared to last month.</p>
-                    </div>
-                `);
+        function renderInsightsPage() {
+            const body = document.getElementById('insightsPageBody');
+            const note = document.getElementById('insightsPeriodNote');
+            const d = insightsData;
+            if (!d) return;
+            if (!d.sufficient) {
+                note.innerText = '';
+                body.innerHTML = analyticsStateBox('fa-lightbulb', escapeHtml(d.message), escapeHtml(d.requirement || ''), addTxButton);
+                return;
             }
-
-            if (savingsGoals.length > 0) {
-                const goal = [...savingsGoals].sort((a, b) => b.progress - a.progress)[0];
-                cards.push(`
-                    <div class="p-3 rounded-xl bg-accent-500/10 border border-accent-500/20 space-y-1">
-                        <div class="flex items-center justify-between text-accent-500 font-bold text-xs">
-                            <span>🎯 Savings Goal Progress</span>
-                            <span>${Math.round(goal.progress)}%</span>
-                        </div>
-                        <p class="text-xs text-main">"${escapeHtml(goal.title)}" is ৳${fmt(goal.remaining)} away from its ৳${fmt(goal.targetAmount)} target.</p>
-                    </div>
-                `);
+            note.innerText = `Current period: ${d.period.start} to ${d.period.end} · compared with ${d.previousPeriod.start} to ${d.previousPeriod.end}`;
+            if (d.insights.length === 0) {
+                body.innerHTML = analyticsStateBox('fa-lightbulb', escapeHtml(d.message), 'Insights appear here as your transactions, budgets and goals give us something meaningful to say.');
+                return;
             }
-
-            list.innerHTML = cards.length > 0
-                ? cards.join('')
-                : '<p class="text-xs text-muted">Add transactions, a budget and a savings goal to see insights here.</p>';
+            body.innerHTML = '<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">' + INSIGHT_GROUPS.map(([key, label, icon]) => {
+                const items = d.groups[key] || [];
+                if (items.length === 0) return '';
+                return `<div class="bg-card p-5 rounded-2xl border border-theme shadow-sm space-y-3 min-w-0">
+                    <h3 class="font-bold text-base text-main flex items-center gap-2"><i class="fa-solid ${icon} text-muted"></i> ${label}</h3>
+                    <div class="space-y-3">${items.map((i) => insightCard(i, true)).join('')}</div>
+                </div>`;
+            }).join('') + '</div>';
         }
 
         function timeAgo(dateStr) {
@@ -1916,53 +2453,120 @@
             } catch (err) { showToast(err.message, 'error'); }
         }
 
+        // ===== SAVINGS GOALS =====
+        // Progress, remaining, status and "excess" are all calculated by the API (one shared
+        // formula); this code only displays them. The bar is capped at 100% - any amount over
+        // the target is shown as text next to it.
+        const GOAL_STATUS = {
+            not_started: { label: 'Not Started', cls: 'bg-slate-500/10 text-muted' },
+            in_progress: { label: 'In Progress', cls: 'bg-blue-500/10 text-blue-600 dark:text-blue-400' },
+            completed: { label: 'Completed', cls: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' },
+            overdue: { label: 'Overdue', cls: 'bg-rose-500/10 text-rose-600 dark:text-rose-400' },
+        };
+
+        function goalDueText(g) {
+            if (!g.targetDate) return 'No target date';
+            if (g.status === 'completed') return `Target date: ${g.targetDate}`;
+            const d = g.daysRemaining;
+            const rel = d === 0 ? 'due today' : d > 0 ? `${d} day${d === 1 ? '' : 's'} left` : `${-d} day${d === -1 ? '' : 's'} overdue`;
+            return `Target date: ${g.targetDate} (${rel})`;
+        }
+
         function renderSavingsGoals() {
             const grid = document.getElementById('savingsGoalsGrid');
             grid.innerHTML = '';
 
-            if(savingsGoals.length === 0) {
-                grid.innerHTML = '<p class="text-xs text-muted col-span-full">No savings goals yet. Click "+ New Goal" to create one.</p>';
+            if (savingsGoals.length === 0) {
+                grid.innerHTML = `<div class="col-span-full bg-card p-8 rounded-2xl border border-theme text-center space-y-3">
+                    <p class="text-sm font-bold text-main">No savings goals yet.</p>
+                    <p class="text-xs text-muted">Create a goal, then add contributions to track your progress.</p>
+                    <button onclick="openGoalFormModal()" class="bg-brand-500 hover:bg-brand-600 text-white text-xs font-semibold px-4 py-2 rounded-xl"><i class="fa-solid fa-plus"></i> Create Goal</button>
+                </div>`;
                 return;
             }
 
             savingsGoals.forEach(g => {
+                const st = GOAL_STATUS[g.status];
                 const pct = Math.round(g.progress);
                 const card = document.createElement('div');
-                card.className = "bg-card p-5 rounded-2xl border border-theme shadow-sm space-y-4";
+                card.className = 'bg-card p-5 rounded-2xl border border-theme shadow-sm space-y-4 min-w-0';
                 card.innerHTML = `
-                    <div class="flex items-center justify-between">
-                        <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 rounded-xl bg-accent-500/10 text-accent-500 flex items-center justify-center text-lg">
+                    <div class="flex items-start justify-between gap-2">
+                        <div class="flex items-center gap-3 min-w-0">
+                            <div class="w-10 h-10 shrink-0 rounded-xl bg-accent-500/10 text-accent-500 flex items-center justify-center text-lg">
                                 <i class="fa-solid ${escapeHtml(g.icon)}"></i>
                             </div>
-                            <div>
-                                <h4 class="font-bold text-sm text-main">${escapeHtml(g.title)}</h4>
-                                <p class="text-[10px] text-muted">Target: ৳${fmt(g.targetAmount)}</p>
+                            <div class="min-w-0">
+                                <h4 class="font-bold text-sm text-main truncate">${escapeHtml(g.title)}</h4>
+                                <p class="text-[10px] text-muted truncate">${g.category ? escapeHtml(g.category) + ' · ' : ''}Target: ৳${fmt(g.targetAmount)}</p>
                             </div>
                         </div>
-                        <div class="flex items-center gap-1">
-                            <span class="text-xs font-bold text-accent-500 bg-accent-500/10 px-2 py-0.5 rounded-lg">${pct}%</span>
-                            <button onclick="openGoalFormModal('${g.id}')" class="p-1 text-slate-400 hover:text-brand-500 text-xs"><i class="fa-solid fa-pen"></i></button>
-                            <button onclick="deleteGoal('${g.id}')" class="p-1 text-slate-400 hover:text-rose-500 text-xs"><i class="fa-solid fa-trash-can"></i></button>
+                        <div class="flex items-center gap-1 shrink-0">
+                            <button onclick="openGoalFormModal('${g.id}')" class="p-1 text-slate-400 hover:text-brand-500 text-xs" aria-label="Edit goal"><i class="fa-solid fa-pen"></i></button>
+                            <button onclick="deleteGoal('${g.id}')" class="p-1 text-slate-400 hover:text-rose-500 text-xs" aria-label="Delete goal"><i class="fa-solid fa-trash-can"></i></button>
                         </div>
                     </div>
 
-                    <div class="space-y-1">
+                    <div class="flex flex-wrap items-center gap-2 text-[11px]">
+                        <span class="font-bold px-2 py-0.5 rounded-lg ${st.cls}">${st.label}</span>
+                        <span class="text-muted">${goalDueText(g)}</span>
+                    </div>
+                    ${g.description ? `<p class="text-xs text-muted">${escapeHtml(g.description)}</p>` : ''}
+
+                    <div class="space-y-1.5">
                         <div class="flex justify-between text-xs">
-                            <span class="font-extrabold text-main">৳${fmt(g.savedAmount)}</span>
-                            <span class="text-muted">Remaining: ৳${fmt(g.remaining)}</span>
+                            <span class="font-extrabold text-main">৳${fmt(g.savedAmount)} saved</span>
+                            <span class="font-bold text-accent-500">${pct}%</span>
                         </div>
-                        <div class="w-full h-2.5 bg-input rounded-full overflow-hidden">
-                            <div class="h-full bg-accent-500 rounded-full transition-all duration-500" style="width: ${pct}%"></div>
+                        <div class="w-full h-2.5 bg-input rounded-full overflow-hidden" role="progressbar" aria-valuenow="${pct}" aria-valuemin="0" aria-valuemax="100">
+                            <div class="h-full ${g.status === 'completed' ? 'bg-emerald-500' : g.status === 'overdue' ? 'bg-rose-500' : 'bg-accent-500'} rounded-full transition-all duration-500" style="width: ${pct}%"></div>
+                        </div>
+                        <div class="flex justify-between text-[11px] text-muted">
+                            <span>Remaining: ৳${fmt(g.remaining)}</span>
+                            ${g.excess > 0 ? `<span class="text-emerald-600 dark:text-emerald-400 font-semibold">৳${fmt(g.excess)} above target</span>` : ''}
                         </div>
                     </div>
 
-                    <button onclick="openGoalModal('${g.id}')" class="w-full py-2 bg-input hover:bg-slate-200 dark:hover:bg-slate-700 text-main text-xs font-bold rounded-xl transition-all-200">
-                        + Deposit Money
-                    </button>
+                    <div class="flex gap-2">
+                        <button onclick="openGoalModal('${g.id}')" class="flex-1 py-2 bg-input hover:bg-slate-200 dark:hover:bg-slate-700 text-main text-xs font-bold rounded-xl transition-all-200">+ Add Money</button>
+                        <button onclick="openGoalHistory('${g.id}')" class="flex-1 py-2 bg-input hover:bg-slate-200 dark:hover:bg-slate-700 text-main text-xs font-bold rounded-xl transition-all-200">History (${g.contributionCount ?? 0})</button>
+                    </div>
                 `;
                 grid.appendChild(card);
             });
+        }
+
+        // Dashboard card - from GET /api/goals/summary (the same numbers the Goals page uses)
+        let goalsSummary = null;
+        function renderDashboardGoals() {
+            const body = document.getElementById('dashboardGoalsBody');
+            if (!body) return;
+            const g = goalsSummary;
+            if (!g) return;
+            if (g.totalCount === 0) {
+                body.innerHTML = `<div class="text-center py-4 space-y-3">
+                    <p class="text-sm text-muted">No savings goals yet.</p>
+                    <button onclick="openGoalFormModal(); navigateTo('savings')" class="bg-brand-500 hover:bg-brand-600 text-white text-xs font-semibold px-4 py-2 rounded-xl"><i class="fa-solid fa-plus"></i> Create Goal</button>
+                </div>`;
+                return;
+            }
+            const stat = (label, value) => `<div class="bg-input rounded-xl p-3"><p class="text-[11px] font-bold text-muted uppercase tracking-wide">${label}</p><p class="text-base font-extrabold text-main">${value}</p></div>`;
+            const upcoming = g.upcoming.length === 0 ? '' : `<div class="space-y-2">
+                <p class="text-[11px] font-bold text-muted uppercase tracking-wide">Upcoming target dates</p>
+                ${g.upcoming.map(u => `<div class="flex items-center justify-between text-xs gap-2"><span class="text-main font-semibold truncate">${escapeHtml(u.title)}</span><span class="shrink-0 ${u.status === 'overdue' ? 'text-rose-500 font-bold' : 'text-muted'}">${u.targetDate} · ${Math.round(u.progress)}%</span></div>`).join('')}
+            </div>`;
+            body.innerHTML = `
+                <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                    ${stat('Total saved', '৳' + fmt(g.totalSaved))}
+                    ${stat('Active goals', g.activeCount)}
+                    ${stat('Completed', g.completedCount)}
+                    ${stat('Overdue', g.overdueCount)}
+                </div>
+                ${g.activeCount > 0 ? `<div class="space-y-1.5">
+                    <div class="flex justify-between text-xs"><span class="text-muted">Active goals progress</span><span class="font-bold text-accent-500">${g.activeProgress}% · ৳${fmt(g.activeSaved)} of ৳${fmt(g.activeTarget)}</span></div>
+                    <div class="w-full h-2.5 bg-input rounded-full overflow-hidden"><div class="h-full bg-accent-500 rounded-full" style="width:${g.activeProgress}%"></div></div>
+                </div>` : ''}
+                ${upcoming}`;
         }
 
         // ----- Create / edit goal -----
@@ -1972,6 +2576,14 @@
             document.getElementById('goalFormId').value = g ? g.id : '';
             document.getElementById('goalFormName').value = g ? g.title : '';
             document.getElementById('goalFormTarget').value = g ? g.targetAmount : '';
+            document.getElementById('goalFormSaved').value = '';
+            // Saved money only changes through contributions, so the starting balance is create-only
+            document.getElementById('goalFormSavedWrap').classList.toggle('hidden', !!g);
+            const dateInput = document.getElementById('goalFormDate');
+            dateInput.value = g && g.targetDate ? g.targetDate : '';
+            dateInput.min = g ? '' : isoToday(); // a new goal can't start already overdue
+            document.getElementById('goalFormCategory').value = g && g.category ? g.category : '';
+            document.getElementById('goalFormDescription').value = g && g.description ? g.description : '';
             document.getElementById('goalFormIcon').value = g ? g.icon : 'fa-piggy-bank';
             document.getElementById('goalFormModal').classList.remove('hidden');
         }
@@ -1986,33 +2598,50 @@
             const payload = {
                 title: document.getElementById('goalFormName').value.trim(),
                 targetAmount: parseFloat(document.getElementById('goalFormTarget').value),
+                targetDate: document.getElementById('goalFormDate').value || null,
+                category: document.getElementById('goalFormCategory').value.trim() || null,
+                description: document.getElementById('goalFormDescription').value.trim() || null,
                 icon: document.getElementById('goalFormIcon').value
             };
-            if(!payload.title || !payload.targetAmount || payload.targetAmount <= 0) {
-                showToast("Please enter a name and a target greater than 0", "error");
+            if (!payload.title || !payload.targetAmount || payload.targetAmount <= 0) {
+                showToast('Please enter a name and a target greater than 0', 'error');
                 return;
+            }
+            if (!id) {
+                const saved = parseFloat(document.getElementById('goalFormSaved').value);
+                if (saved > 0) {
+                    if (saved > payload.targetAmount) { showToast('Already saved cannot be more than the target', 'error'); return; }
+                    payload.savedAmount = saved;
+                }
             }
             try {
                 await api(id ? `/goals/${id}` : '/goals', { method: id ? 'PUT' : 'POST', body: payload });
                 closeGoalFormModal();
                 await loadGoals();
-                showToast(id ? "Goal updated" : "Goal created", "success");
+                await loadNotifications();
+                showToast(id ? 'Goal updated' : 'Goal created', 'success');
             } catch (err) { showToast(err.message, 'error'); }
         }
 
         async function deleteGoal(id) {
-            if(!confirm("Delete this savings goal?")) return;
+            if (!confirm('Delete this savings goal and its contribution history?')) return;
             try {
                 await api(`/goals/${id}`, { method: 'DELETE' });
                 await loadGoals();
-                showToast("Goal deleted", "info");
+                showToast('Goal deleted', 'info');
             } catch (err) { showToast(err.message, 'error'); }
         }
 
-        // ----- Deposit -----
+        // ----- Contribution -----
         function openGoalModal(id) {
+            const g = savingsGoals.find(x => x.id === id);
             document.getElementById('goalModalIndex').value = id;
+            document.getElementById('goalContributionTitle').innerText = g ? `Add Money to ${g.title}` : 'Add Money to Goal';
             document.getElementById('goalDepositAmount').value = '';
+            document.getElementById('goalDepositNote').value = '';
+            const dateInput = document.getElementById('goalDepositDate');
+            dateInput.value = isoToday();
+            dateInput.max = isoToday();
             document.getElementById('goalModal').classList.remove('hidden');
         }
 
@@ -2020,20 +2649,60 @@
             document.getElementById('goalModal').classList.add('hidden');
         }
 
-        async function saveGoalDeposit() {
+        async function saveGoalDeposit(e) {
+            if (e) e.preventDefault();
             const id = document.getElementById('goalModalIndex').value;
             const amt = parseFloat(document.getElementById('goalDepositAmount').value);
-            if(!amt || amt <= 0) {
-                showToast("Enter a deposit amount greater than 0", "error");
+            if (!amt || amt <= 0) {
+                showToast('Enter an amount greater than 0', 'error');
                 return;
             }
+            const btn = document.getElementById('goalDepositBtn');
+            btn.disabled = true; // avoid a double-submit adding the contribution twice
             try {
-                const json = await api(`/goals/${id}/deposit`, { method: 'POST', body: { amount: amt } });
+                const json = await api(`/goals/${id}/contributions`, { method: 'POST', body: {
+                    amount: amt,
+                    date: document.getElementById('goalDepositDate').value || undefined,
+                    note: document.getElementById('goalDepositNote').value.trim() || undefined,
+                } });
                 closeGoalModal();
                 await loadGoals();
-                await loadNotifications(); // a deposit can cross a 50%/100% milestone
-                showToast(`Deposited ৳${fmt(amt)} to ${json.data.goal.title}`, "success");
+                await loadNotifications(); // a contribution can cross a 50%/100% milestone
+                showToast(`Added ৳${fmt(amt)} to ${json.data.goal.title}`, 'success');
             } catch (err) { showToast(err.message, 'error'); }
+            finally { btn.disabled = false; }
+        }
+
+        // ----- Contribution history -----
+        let lastHistoryGoalId = null;
+        function retryGoalHistory() { openGoalHistory(lastHistoryGoalId); }
+        async function openGoalHistory(id) {
+            lastHistoryGoalId = id;
+            const body = document.getElementById('goalHistoryBody');
+            document.getElementById('goalHistoryTitle').innerText = 'Contribution History';
+            body.innerHTML = skeletonCards(3, 'h-10');
+            document.getElementById('goalHistoryModal').classList.remove('hidden');
+            try {
+                const json = await api(`/goals/${id}/contributions`);
+                const { goal, contributions } = json.data;
+                document.getElementById('goalHistoryTitle').innerText = `${goal.title} — History`;
+                body.innerHTML = contributions.length === 0
+                    ? '<p class="text-muted text-center py-6">No contributions yet.</p>'
+                    : contributions.map(c => `
+                        <div class="flex items-start justify-between gap-3 bg-input rounded-xl p-3">
+                            <div class="min-w-0">
+                                <p class="font-bold text-main">${c.date}</p>
+                                ${c.note ? `<p class="text-muted break-words">${escapeHtml(c.note)}</p>` : ''}
+                            </div>
+                            <span class="font-extrabold text-emerald-600 dark:text-emerald-400 shrink-0">+৳${fmt(c.amount)}</span>
+                        </div>`).join('');
+            } catch (err) {
+                body.innerHTML = errorRetryBlock(err.message, 'retryGoalHistory');
+            }
+        }
+
+        function closeGoalHistory() {
+            document.getElementById('goalHistoryModal').classList.add('hidden');
         }
 
         function initWhatIfCalculator() {
@@ -2118,28 +2787,14 @@
                 }
             });
 
-            const ctxIncExp = document.getElementById('incomeVsExpenseChart').getContext('2d');
-            incomeVsExpenseChartInstance = new Chart(ctxIncExp, {
-                type: 'bar',
-                data: {
-                    labels: [],
-                    datasets: [
-                        { label: 'Income', data: [], backgroundColor: '#10B981', borderRadius: 6 },
-                        { label: 'Expenses', data: [], backgroundColor: '#EF4444', borderRadius: 6 }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { position: 'top' } }
-                }
-            });
         }
 
         function updateChartColors() {
             if(overviewChartInstance) overviewChartInstance.update();
             if(categoryChartInstance) categoryChartInstance.update();
-            if(incomeVsExpenseChartInstance) incomeVsExpenseChartInstance.update();
+            if (healthData && healthData.available && !document.getElementById('page-health').classList.contains('hidden')) renderHealthPage();
+            // Analytics charts are rebuilt so axis/label colours follow the new theme
+            if (analyticsData && !document.getElementById('analyticsContent').classList.contains('hidden')) renderAnalytics();
         }
 
         function showToast(message, type = 'success') {
