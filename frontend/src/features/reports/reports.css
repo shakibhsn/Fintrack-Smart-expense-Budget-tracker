@@ -1,0 +1,21 @@
+.rp-controls { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 12px; }
+.rp-controls .field { min-width: 150px; }
+.rp-bar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: space-between; }
+.rp-bar-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.rp-banner { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; justify-content: space-between; padding: 10px 14px; border-radius: var(--r-md); background: rgb(var(--surface-2)); border: 1px solid rgb(var(--line)); font-size: var(--text-sm); }
+.rp-banner[data-kind="snapshot"] { border-color: rgb(var(--warn, var(--brand))); }
+.rp-stats { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(min(210px, 100%), 1fr)); }
+.rp-split { display: grid; gap: 16px; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); }
+.rp-charts { display: grid; gap: 16px; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); }
+.rp-list { display: grid; gap: 10px; list-style: none; margin: 0; padding: 0; font-size: var(--text-sm); grid-template-columns: minmax(0, 1fr); }
+.rp-list li { display: flex; gap: 8px; align-items: flex-start; }
+.rp-two { display: grid; gap: 16px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.rp-est { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr)); }
+.rp-tag { font-size: 10px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; }
+.rp-history { display: grid; gap: 8px; }
+.rp-hist-item { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; justify-content: space-between; padding: 10px 12px; border: 1px solid rgb(var(--line)); border-radius: var(--r-md); }
+.rp-hist-main { min-width: 0; flex: 1 1 220px; }
+.rp-legend { display: grid; gap: 8px; max-height: 190px; overflow-y: auto; font-size: var(--text-xs); margin-top: 12px; }
+.rp-legend-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.rp-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; display: inline-block; margin-right: 8px; }
+@media (max-width: 900px) { .rp-split, .rp-charts, .rp-two { grid-template-columns: minmax(0, 1fr); } }

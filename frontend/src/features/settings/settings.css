@@ -1,0 +1,9 @@
+/* Settings page */
+.settings-layout { display: grid; gap: 20px; max-width: 760px; grid-template-columns: minmax(0, 1fr); }
+.settings-row { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 0; }
+.settings-row + .settings-row { border-top: 1px solid rgb(var(--line)); }
+.settings-row .label-text { font-weight: 700; font-size: var(--text-sm); }
+.settings-row .hint-text { color: rgb(var(--mute)); font-size: var(--text-xs); margin-top: 2px; }
+.settings-seg { min-width: 240px; }
+.profile-grid { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+.readonly-value { padding: 10px 12px; border-radius: var(--r-md); background: rgb(var(--surface-2)); font-size: var(--text-sm); font-weight: 600; word-break: break-all; }

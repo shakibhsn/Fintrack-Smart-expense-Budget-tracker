@@ -1,0 +1,14 @@
+/* Recurring transactions page */
+.rc-grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fill, minmax(min(380px, 100%), 1fr)); }
+.rc-card { display: grid; gap: 12px; align-content: start; min-width: 0; grid-template-columns: minmax(0, 1fr); }
+.rc-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.rc-amount { font-size: var(--text-lg); font-weight: 800; font-variant-numeric: tabular-nums; text-align: right; }
+.rc-facts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; text-align: center; }
+.rc-facts .tile { padding: 8px 4px; }
+.rc-facts .v { font-size: var(--text-xs); font-weight: 800; }
+.rc-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.rc-upcoming { display: flex; flex-wrap: wrap; gap: 8px; }
+.rc-option { display: block; width: 100%; text-align: left; padding: 12px; border: 1px solid rgb(var(--line)); border-radius: var(--r-md); background: rgb(var(--surface)); }
+.rc-option:hover { background: rgb(var(--surface-2)); }
+.rc-option b { display: block; font-size: var(--text-sm); }
+.rc-option span { font-size: var(--text-xs); color: rgb(var(--mute)); }

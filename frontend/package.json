@@ -1,0 +1,15 @@
+{
+  "name": "fintrack-frontend",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build": "npm run build:css && node scripts/copy-chart.js",
+    "build:css": "tailwindcss -i ./src/styles/tailwind.css -o ./dist/tailwind.css --minify"
+  },
+  "dependencies": {
+    "chart.js": "4.4.1"
+  },
+  "devDependencies": {
+    "tailwindcss": "3.4.17"
+  }
+}

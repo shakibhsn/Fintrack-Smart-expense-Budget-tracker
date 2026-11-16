@@ -1,0 +1,9 @@
+/* Savings goals page */
+.goal-summary { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(min(170px, 100%), 1fr)); }
+.goal-grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fill, minmax(min(310px, 100%), 1fr)); }
+.goal-card { display: grid; gap: 14px; align-content: start; min-width: 0; grid-template-columns: minmax(0, 1fr); }
+.goal-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
+.goal-title { min-width: 0; }
+.goal-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; font-size: var(--text-xs); color: rgb(var(--mute)); }
+.goal-foot { display: flex; justify-content: space-between; gap: 8px; font-size: var(--text-xs); color: rgb(var(--mute)); }
+.goal-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }

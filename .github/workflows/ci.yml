@@ -1,0 +1,105 @@
+name: CI
+
+# Runs on every push / pull request and is reused by the deploy workflow, so nothing is ever deployed that did not pass these checks.
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_call:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  backend:
+    name: Backend (security checks + API tests against a TEST database)
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: fintrack
+          POSTGRES_PASSWORD: ci-only-password
+          POSTGRES_DB: fintrack_test
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U fintrack -d fintrack_test" --health-interval 5s --health-timeout 3s --health-retries 10
+    env:
+      # a throw-away database that exists only for this job; the real database is never reachable from CI
+      DATABASE_URL: postgresql://fintrack:ci-only-password@localhost:5432/fintrack_test?schema=public
+      JWT_SECRET: ci-only-jwt-secret-ci-only-jwt-secret-0123456789
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20, cache: npm, cache-dependency-path: backend/package-lock.json }
+      - run: npm ci
+      - run: npx prisma generate
+      - name: Apply every migration to the empty test database
+        run: npx prisma migrate deploy
+      - name: Dependency vulnerabilities (production dependencies, high or critical fail the build)
+        run: npm audit --omit=dev --audit-level=high
+      - name: Secret scan
+        run: npm run scan:secrets
+      - name: API test suites (phases 1-17, AI, security, integrity)
+        run: bash tests/api/run-all.sh
+
+  frontend:
+    name: Frontend (build + browser tests)
+    runs-on: ubuntu-latest
+    needs: []
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: fintrack
+          POSTGRES_PASSWORD: ci-only-password
+          POSTGRES_DB: fintrack_test
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U fintrack -d fintrack_test" --health-interval 5s --health-timeout 3s --health-retries 10
+    env:
+      DATABASE_URL: postgresql://fintrack:ci-only-password@localhost:5432/fintrack_test?schema=public
+      JWT_SECRET: ci-only-jwt-secret-ci-only-jwt-secret-0123456789
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20, cache: npm, cache-dependency-path: "frontend/package-lock.json" }
+      - name: Build the frontend (Tailwind CSS + Chart.js bundle)
+        working-directory: frontend
+        run: |
+          npm ci
+          npm audit --audit-level=high
+          npm run build
+          test -s dist/tailwind.css && test -s dist/chart.umd.js
+      - name: Backend for the browser tests
+        working-directory: backend
+        run: |
+          npm ci
+          npx prisma generate
+          npx prisma migrate deploy
+          NODE_ENV=test PORT=5055 CLIENT_URL=http://localhost:5600 RECURRING_SCHEDULER=off RATE_LIMIT_MAX=100000 AUTH_RATE_LIMIT_MAX=100000 \
+          EXPORT_RATE_LIMIT_MAX=1000 IMPORT_RATE_LIMIT_MAX=1000 EMAIL_TEST_RATE_LIMIT_MAX=1000 AI_RATE_LIMIT_MAX=1000 \
+          ANTHROPIC_API_KEY=sk-test-ai-key-123 AI_API_URL=http://127.0.0.1:5058/v1/messages AI_TIMEOUT_MS=1500 \
+          SMTP_HOST=127.0.0.1 SMTP_PORT=2525 SMTP_IGNORE_TLS=true EMAIL_FROM="FinTrack <noreply@fintrack.test>" \
+          nohup node src/server.js > /tmp/api.log 2>&1 &
+          for i in $(seq 1 60); do curl -sf http://localhost:5055/api/health && break; sleep 1; done
+      - name: Headless Chrome with remote debugging (the e2e harness connects to :9333)
+        run: |
+          nohup google-chrome --headless=new --no-sandbox --disable-gpu --remote-debugging-port=9333 --user-data-dir=/tmp/chrome-e2e about:blank > /tmp/chrome.log 2>&1 &
+          for i in $(seq 1 30); do curl -sf http://localhost:9333/json/version >/dev/null && break; sleep 1; done
+      - name: Browser test suites
+        working-directory: frontend/tests/e2e
+        run: |
+          npm ci
+          for s in core transactions features-a features-b login quality subscriptions notifications reports import-export ai ui; do
+            echo "== $s"; node $s.test.js || exit 1
+          done
+      - if: failure()
+        run: tail -n 60 /tmp/api.log /tmp/chrome.log || true

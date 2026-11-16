@@ -2,7 +2,7 @@ const prisma = require('../config/prisma');
 const asyncHandler = require('../utils/asyncHandler');
 const httpError = require('../utils/httpError');
 const { serializeGoal, serializeContribution } = require('../utils/serialize');
-const { checkGoalMilestones } = require('../services/notificationService');
+const { onGoalCreated, onGoalContribution } = require('../services/notificationService');
 const { addContribution, getGoalsSummary, withCount, INITIAL_NOTES } = require('../services/goalService');
 
 // Every goal/contribution query includes userId - that is the ownership check. Another
@@ -50,7 +50,8 @@ const createGoal = asyncHandler(async (req, res) => {
     }
     return tx.savingsGoal.findUnique({ where: { id: created.id }, include: withCount });
   });
-  if (savedAmount > 0) await checkGoalMilestones(req.user.id, goal);
+  await onGoalCreated(req.user.id, goal);
+  if (savedAmount > 0) await onGoalContribution(req.user.id, goal, null); // a starting balance can already cross a milestone
   res.status(201).json({ success: true, data: { goal: serializeGoal(goal) } });
 });
 
@@ -73,7 +74,7 @@ const createContribution = asyncHandler(async (req, res) => {
   await findOwned(req.params.id, req.user.id);
   const { contribution, goal } = await addContribution(req.user.id, req.params.id, req.body);
   // Awaited so a client that refetches notifications right after this request sees the milestone.
-  await checkGoalMilestones(req.user.id, goal);
+  await onGoalContribution(req.user.id, goal, contribution);
   res.status(201).json({ success: true, data: { goal: serializeGoal(goal), contribution: serializeContribution(contribution) } });
 });
 

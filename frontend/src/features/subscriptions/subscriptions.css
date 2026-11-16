@@ -1,0 +1,25 @@
+/* Subscriptions page */
+.sb-stats { display: grid; gap: 16px; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.sb-row { display: grid; gap: 16px; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); }
+.sb-row-3 { display: grid; gap: 16px; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.sb-widget { min-width: 0; }
+.sb-widget > .card { height: 100%; }
+.sb-grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fill, minmax(min(360px, 100%), 1fr)); }
+.sb-card { display: grid; gap: 12px; align-content: start; min-width: 0; grid-template-columns: minmax(0, 1fr); }
+.sb-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.sb-price { text-align: right; }
+.sb-price b { font-size: var(--text-lg); font-weight: 800; font-variant-numeric: tabular-nums; }
+.sb-facts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; text-align: center; }
+.sb-facts .tile { padding: 8px 4px; }
+.sb-facts .v { font-size: var(--text-xs); font-weight: 800; }
+.sb-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.sb-list { display: grid; gap: 4px; list-style: none; margin: 0; padding: 0; grid-template-columns: minmax(0, 1fr); }
+.sb-item { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 0; }
+.sb-item + .sb-item { border-top: 1px solid rgb(var(--line)); }
+.sb-est { font-size: 10px; font-weight: 800; letter-spacing: 0.06em; padding: 2px 6px; border-radius: 6px; background: rgb(var(--accent-500) / 0.14); color: rgb(var(--accent-600)); }
+[data-theme='dark'] .sb-est { color: rgb(var(--brand-200)); }
+.sb-act { background: rgb(var(--brand-500) / 0.12); color: rgb(var(--brand-text)); }
+.sb-note { font-size: var(--text-xs); color: rgb(var(--mute)); }
+@media (max-width: 1100px) { .sb-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); } .sb-row-3 { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 900px) { .sb-row { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 480px) { .sb-stats { grid-template-columns: minmax(0, 1fr); } }

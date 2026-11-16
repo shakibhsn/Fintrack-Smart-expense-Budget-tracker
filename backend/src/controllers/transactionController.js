@@ -6,10 +6,12 @@ const { listQuerySchema } = require('../validators/transactionValidators');
 const { checkBudgetByCategoryAndDate } = require('../services/notificationService');
 
 const SORTS = {
-  'date-desc': [{ date: 'desc' }, { createdAt: 'desc' }],
-  'date-asc': [{ date: 'asc' }, { createdAt: 'asc' }],
-  'amount-desc': [{ amount: 'desc' }],
-  'amount-asc': [{ amount: 'asc' }],
+  // every ordering ends with the unique id: rows that tie on date / created time / amount must still come back in ONE fixed order,
+  // otherwise page 2 can repeat rows of page 1 and skip others
+  'date-desc': [{ date: 'desc' }, { createdAt: 'desc' }, { id: 'asc' }],
+  'date-asc': [{ date: 'asc' }, { createdAt: 'asc' }, { id: 'asc' }],
+  'amount-desc': [{ amount: 'desc' }, { date: 'desc' }, { id: 'asc' }],
+  'amount-asc': [{ amount: 'asc' }, { date: 'desc' }, { id: 'asc' }],
 };
 
 // Every query includes userId: that is what keeps each user's data separate.

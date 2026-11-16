@@ -1,0 +1,12 @@
+{
+  "name": "fintrack-frontend-e2e",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Browser end-to-end tests for the FinTrack frontend (run against a TEST backend/database)",
+  "scripts": {
+    "test": "node core.test.js && node transactions.test.js && node features-a.test.js && node features-b.test.js && node login.test.js && node quality.test.js && node subscriptions.test.js && node notifications.test.js && node reports.test.js && node import-export.test.js && node ai.test.js && node ui.test.js"
+  },
+  "dependencies": {
+    "puppeteer-core": "^23.0.0"
+  }
+}

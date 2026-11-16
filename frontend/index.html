@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="refresh" content="0; url=login.html">
+    <title>FinTrack</title>
+</head>
+<body>
+    <p>Redirecting to <a href="login.html">FinTrack</a>…</p>
+    <script>
+        // Signed-in users go straight to the app; everyone else to the login page.
+        try { if (localStorage.getItem('fintrack_token')) location.replace('fintrack_application.html'); else location.replace('login.html'); } catch (e) { location.replace('login.html'); }
+    </script>
+</body>
+</html>

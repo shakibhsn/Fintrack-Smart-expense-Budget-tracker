@@ -1,0 +1,20 @@
+/* Transactions page */
+.tx-summary { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(min(190px, 100%), 1fr)); }
+.tx-toolbar { display: grid; gap: 12px; grid-template-columns: minmax(0, 1fr) auto auto; align-items: start; }
+.tx-toolbar > * { min-width: 0; }
+.tx-filters { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(min(170px, 100%), 1fr)); align-items: end; }
+.tx-desc { display: flex; align-items: center; gap: 8px; font-weight: 700; min-width: 0; }
+.tx-desc .meta-icon { font-size: 11px; color: rgb(var(--mute)); }
+.tx-desc .recurring-icon { color: rgb(var(--brand-text)); }
+.tx-amount { font-weight: 800; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.tx-actions { display: flex; justify-content: flex-end; gap: 4px; }
+.tx-cards { display: grid; grid-template-columns: minmax(0, 1fr); }
+.tx-card { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 4px; }
+.tx-card + .tx-card { border-top: 1px solid rgb(var(--line)); }
+.tx-card .tx-icon { width: 38px; height: 38px; border-radius: var(--r-md); display: grid; place-items: center; flex-shrink: 0; font-size: 13px; }
+.tx-card .tx-icon.is-income { background: rgb(var(--brand-500) / 0.12); color: rgb(var(--income)); }
+.tx-card .tx-icon.is-expense { background: rgb(var(--danger-soft)); color: rgb(var(--expense)); }
+@media (max-width: 720px) {
+  .tx-toolbar { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  .tx-toolbar > :first-child { grid-column: 1 / -1; }
+}

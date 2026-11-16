@@ -1,0 +1,9 @@
+/* Forecast page */
+.fc-summary { padding: 20px; border-radius: var(--r-lg); border: 1px solid rgb(var(--brand-500) / 0.3); background: rgb(var(--brand-tint)); display: grid; gap: 8px; grid-template-columns: minmax(0, 1fr); }
+.fc-cards { display: grid; gap: 16px; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.fc-charts { display: grid; gap: 16px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.fc-estimate-tag { font-size: 10px; font-weight: 800; letter-spacing: 0.06em; padding: 2px 6px; border-radius: 6px; background: rgb(var(--accent-500) / 0.14); color: rgb(var(--accent-600)); }
+[data-theme='dark'] .fc-estimate-tag { color: rgb(var(--brand-200)); }
+.fc-card-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.fc-table td, .fc-table th { padding: 10px 8px; }
+@media (max-width: 900px) { .fc-cards, .fc-charts { grid-template-columns: minmax(0, 1fr); } }

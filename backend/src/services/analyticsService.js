@@ -260,4 +260,4 @@ const getAnalyticsOverview = async (userId, { period, startDate, endDate }) => {
   };
 };
 
-module.exports = { getMonthlyIncomeExpense, getCategoryBreakdown, getSpendingForecast, sumByType, getAnalyticsOverview, categoryTotals, timeSeries };
+module.exports = { getMonthlyIncomeExpense, getCategoryBreakdown, getSpendingForecast, sumByType, getAnalyticsOverview, categoryTotals, timeSeries, metricComparison };

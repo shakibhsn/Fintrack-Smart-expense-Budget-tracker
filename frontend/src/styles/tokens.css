@@ -1,0 +1,116 @@
+/* ==========================================================================
+   FinTrack design tokens
+   Single source of truth for colour, type, spacing, radius, shadow and motion.
+   Colours are stored as "R G B" channels so Tailwind can apply opacity:
+   `bg-brand-500/10` -> rgb(var(--brand-500) / 0.1).
+
+   Brand palette (supplied):
+     #228B22 forest   #A9DFBF mint   #1E5631 deep forest   #4CAF50 leaf   #2E8B57 sea green
+   Accessibility notes (WCAG contrast on white / on the dark surface):
+     - Body text and button fills use #1E5631 (8.6:1) in light mode.
+     - #228B22 (4.4:1) is used for icons, indicators, focus rings, charts and large text.
+     - #4CAF50 and #2E8B57 are accents/charts only, never small text on white.
+     - Dark mode uses #A9DFBF for brand text and #4CAF50 fills with dark text (6.7:1).
+   ========================================================================== */
+
+:root {
+  /* ----- brand scale (500 = #228B22, 700 = #1E5631, 400 = #4CAF50, 200 = #A9DFBF) ----- */
+  --brand-50: 241 250 244;
+  --brand-100: 221 243 229;
+  --brand-200: 169 223 191;
+  --brand-300: 124 203 147;
+  --brand-400: 76 175 80;
+  --brand-500: 34 139 34;
+  --brand-600: 32 112 41;
+  --brand-700: 30 86 49;
+  --brand-800: 23 68 38;
+  --brand-900: 15 45 24;
+
+  /* ----- secondary accent (sea green #2E8B57) ----- */
+  --accent-100: 211 235 221;
+  --accent-400: 79 163 122;
+  --accent-500: 46 139 87;
+  --accent-600: 38 116 72;
+
+  /* ----- semantic status colours (finance needs a red; green already means "good") ----- */
+  --danger: 185 28 28;       /* expenses, errors */
+  --danger-soft: 254 226 226;
+  --warning: 133 77 14;      /* caution (#854D0E: 5.9:1 on its tint) */
+  --warning-soft: 254 243 199;
+
+  /* ----- surfaces & text (light) ----- */
+  --bg: 245 248 246;
+  --surface: 255 255 255;
+  --surface-2: 238 243 240;  /* inputs, hover, chips */
+  --line: 221 229 224;       /* borders */
+  --ink: 15 31 22;           /* primary text */
+  --mute: 84 104 93;         /* secondary text (6:1) */
+  --subtle: 90 109 97;       /* secondary small text (4.5:1+ on white and on the tinted surfaces) */
+
+  /* role tokens: what components actually use */
+  --brand-text: 30 86 49;    /* links, brand-coloured text */
+  --brand-fill: 30 86 49;    /* primary button background */
+  --on-brand: 255 255 255;   /* text on --brand-fill */
+  --brand-tint: 241 250 244; /* soft brand backgrounds */
+  --focus: 34 139 34;        /* focus ring (#228B22) */
+  --income: 30 86 49;
+  --expense: 185 28 28;
+
+  /* ----- typography ----- */
+  --font-sans: 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --text-2xs: 0.6875rem;  /* 11px */
+  --text-xs: 0.75rem;     /* 12px */
+  --text-sm: 0.8125rem;   /* 13px */
+  --text-base: 0.9375rem; /* 15px */
+  --text-lg: 1.125rem;
+  --text-xl: 1.375rem;
+  --text-2xl: 1.75rem;
+
+  /* ----- radius ----- */
+  --r-sm: 8px;
+  --r-md: 12px;
+  --r-lg: 16px;
+  --r-xl: 20px;
+  --r-pill: 999px;
+
+  /* ----- elevation (kept subtle on purpose) ----- */
+  --shadow-1: 0 1px 2px rgb(15 31 22 / 0.05);
+  --shadow-2: 0 8px 24px rgb(15 31 22 / 0.10), 0 2px 6px rgb(15 31 22 / 0.05);
+
+  /* ----- layout ----- */
+  --sidebar-w: 264px;
+  --sidebar-w-collapsed: 76px;
+  --topbar-h: 64px;
+  --content-max: 1280px;
+
+  /* ----- motion ----- */
+  --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --dur-fast: 120ms;
+  --dur: 200ms;
+}
+
+[data-theme='dark'] {
+  --bg: 10 20 14;
+  --surface: 17 29 22;
+  --surface-2: 27 43 33;
+  --line: 38 58 46;
+  --ink: 236 244 239;
+  --mute: 156 178 165;
+  --subtle: 139 160 147;
+
+  --brand-text: 169 223 191;   /* #A9DFBF */
+  --brand-fill: 76 175 80;     /* #4CAF50 */
+  --on-brand: 10 20 14;
+  --brand-tint: 21 43 29;
+  --focus: 169 223 191;
+  --income: 124 203 147;
+  --expense: 248 113 113;
+
+  --danger: 248 113 113;
+  --danger-soft: 69 26 26;
+  --warning: 251 191 36;
+  --warning-soft: 66 48 10;
+
+  --shadow-1: 0 1px 2px rgb(0 0 0 / 0.4);
+  --shadow-2: 0 10px 30px rgb(0 0 0 / 0.5);
+}

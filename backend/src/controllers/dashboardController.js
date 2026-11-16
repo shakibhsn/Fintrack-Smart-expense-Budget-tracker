@@ -52,7 +52,7 @@ const getDashboard = asyncHandler(async (req, res) => {
   ]);
 
   const balance = income - expense;
-  const savingsRate = income > 0 ? Math.round((balance / income) * 1000) / 10 : 0;
+  const savingsRate = income > 0 ? Math.round((balance / income) * 1000) / 10 : null; // null = no income, so no rate (never a misleading 0%)
 
   res.json({
     success: true,

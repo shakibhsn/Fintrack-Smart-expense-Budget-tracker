@@ -1,0 +1,11 @@
+node_modules/
+.env
+*.log
+fintrack-backup.sql
+*.sql.bak
+frontend/tests/e2e/screenshots/
+.env.*
+!.env.example
+backups/
+*.dump
+*.dump.sha256

@@ -1,0 +1,49 @@
+# A production-LIKE stack on one machine (PostgreSQL + API + static frontend). For learning/staging experiments, not a substitute for real hosting.
+#   cp .env.docker.example .env.docker      (edit the secrets)
+#   docker compose --env-file .env.docker up --build
+#   docker compose --env-file .env.docker run --rm migrate          (first start and after every release)
+# Frontend: http://localhost:8080   API: http://localhost:5000/api/health
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-fintrack}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env.docker}
+      POSTGRES_DB: ${POSTGRES_DB:-fintrack}
+    volumes: [dbdata:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-fintrack} -d ${POSTGRES_DB:-fintrack}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  migrate:
+    build: ./backend
+    profiles: ["tools"]
+    command: ["npx", "prisma", "migrate", "deploy"]
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-fintrack}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-fintrack}?schema=public
+    depends_on: { db: { condition: service_healthy } }
+
+  api:
+    build: ./backend
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: 5000
+      DATABASE_URL: postgresql://${POSTGRES_USER:-fintrack}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-fintrack}?schema=public
+      JWT_SECRET: ${JWT_SECRET:?set JWT_SECRET (at least 32 random characters)}
+      CLIENT_URL: ${CLIENT_URL:-https://localhost:8443}
+      TRUST_PROXY: ${TRUST_PROXY:-}
+    ports: ["5000:5000"]
+    depends_on: { db: { condition: service_healthy } }
+
+  web:
+    image: nginx:1.27-alpine
+    volumes:
+      - ./frontend:/usr/share/nginx/html:ro
+    ports: ["8080:80"]
+    depends_on: [api]
+
+volumes:
+  dbdata:

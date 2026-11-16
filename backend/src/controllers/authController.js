@@ -4,6 +4,10 @@ const generateToken = require('../utils/generateToken');
 const asyncHandler = require('../utils/asyncHandler');
 const { createWelcomeNotification } = require('../services/notificationService');
 
+const BCRYPT_ROUNDS = Math.min(14, Math.max(10, Number(process.env.BCRYPT_ROUNDS) || 12));
+// Compared against when the e-mail is unknown, so a login for a missing account takes as long as a wrong password (no account enumeration by timing).
+const DUMMY_HASH = bcrypt.hashSync('fintrack-timing-equaliser', BCRYPT_ROUNDS);
+
 // POST /api/auth/register
 const registerUser = asyncHandler(async (req, res) => {
   const { name, email, password } = req.body;
@@ -14,7 +18,7 @@ const registerUser = asyncHandler(async (req, res) => {
     throw new Error('An account with this email already exists');
   }
 
-  const salt = await bcrypt.genSalt(10);
+  const salt = await bcrypt.genSalt(BCRYPT_ROUNDS);
   const passwordHash = await bcrypt.hash(password, salt);
 
   const user = await prisma.user.create({
@@ -37,6 +41,7 @@ const loginUser = asyncHandler(async (req, res) => {
 
   const user = await prisma.user.findUnique({ where: { email } });
   if (!user) {
+    await bcrypt.compare(password, DUMMY_HASH);
     res.status(401);
     throw new Error('Invalid email or password');
   }

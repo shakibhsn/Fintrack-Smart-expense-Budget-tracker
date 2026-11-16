@@ -18,8 +18,8 @@ const rangesOverlap = (aStart, aEnd, bStart, bEnd) => aStart <= bEnd && bStart <
 
 // Finds an existing budget for this category whose date range overlaps the given one
 // (optionally excluding one budget id, for updates). Used to block ambiguous/duplicate budgets.
-const findOverlappingBudget = (userId, category, startDate, endDate, excludeId) =>
-  prisma.budget.findFirst({
+const findOverlappingBudget = (userId, category, startDate, endDate, excludeId, db = prisma) =>
+  db.budget.findFirst({
     where: {
       userId,
       category,
@@ -101,4 +101,12 @@ const getBudgetSummary = async (userId) => {
   };
 };
 
-module.exports = { getBudgetsWithSpending, getBudgetSummary, findOverlappingBudget };
+// Runs `fn(tx)` inside ONE database transaction that first takes a per-user + per-category advisory lock. "Is there an overlapping budget?" followed by
+// "create it" is a check-then-act sequence: without the lock, two simultaneous requests both see "no overlap" and both insert. The lock makes them take turns
+// (it is released automatically when the transaction ends), so the overlap rule holds under concurrency.
+const withBudgetLock = (userId, category, fn) => prisma.$transaction(async (tx) => {
+  await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${`budget:${userId}:${category}`}))`;
+  return fn(tx);
+}, { timeout: 15000 });
+
+module.exports = { getBudgetsWithSpending, getBudgetSummary, findOverlappingBudget, withBudgetLock };

@@ -1,0 +1,11 @@
+/* Budgets page */
+.bg-overview { display: grid; gap: 16px; grid-template-columns: minmax(0, 1fr); }
+.bg-overview-top { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 16px; }
+.bg-big { font-size: var(--text-2xl); font-weight: 800; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+.bg-grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fill, minmax(min(300px, 100%), 1fr)); }
+.bg-card { display: grid; gap: 12px; align-content: start; grid-template-columns: minmax(0, 1fr); }
+.bg-card.is-warning { border-color: rgb(var(--warning) / 0.45); }
+.bg-card.is-critical { border-color: rgb(var(--warning) / 0.7); }
+.bg-card.is-over { border-color: rgb(var(--danger) / 0.6); }
+.bg-card-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
+.bg-amounts { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 4px 12px; }

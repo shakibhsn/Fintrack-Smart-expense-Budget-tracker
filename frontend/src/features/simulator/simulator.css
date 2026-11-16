@@ -1,0 +1,22 @@
+/* What-If simulator */
+.sim-top { display: flex; flex-wrap: wrap; align-items: end; gap: 12px; }
+.sim-summary { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(min(170px, 100%), 1fr)); }
+.sim-layout { display: grid; gap: 20px; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); align-items: start; }
+.sim-controls, .sim-results { display: grid; gap: 16px; min-width: 0; grid-template-columns: minmax(0, 1fr); }
+.sim-results { position: sticky; top: calc(var(--topbar-h) + 16px); }
+.sim-cat { display: grid; gap: 8px; padding: 12px; border-radius: var(--r-md); background: rgb(var(--surface-2)); grid-template-columns: minmax(0, 1fr); }
+.sim-cat-head { display: flex; justify-content: space-between; gap: 8px; font-size: var(--text-xs); font-weight: 700; }
+.sim-result-hero { padding: 20px; border-radius: var(--r-lg); background: rgb(var(--brand-tint)); border: 1px solid rgb(var(--brand-500) / 0.3); display: grid; gap: 10px; grid-template-columns: minmax(0, 1fr); }
+.sim-big { font-size: var(--text-2xl); font-weight: 800; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+.sim-pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.sim-rows { display: grid; gap: 8px; font-size: var(--text-xs); grid-template-columns: minmax(0, 1fr); }
+.sim-row { display: flex; justify-content: space-between; gap: 12px; }
+.sim-saved { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; padding: 12px; border-radius: var(--r-md); background: rgb(var(--surface-2)); }
+.sim-compare { display: grid; gap: 12px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+@media (max-width: 1000px) {
+  .sim-layout { grid-template-columns: minmax(0, 1fr); }
+  .sim-results { position: static; }
+}
+@media (max-width: 560px) { .sim-compare { grid-template-columns: minmax(0, 1fr); } }
+#sim-table th { white-space: normal; }
+#sim-table td.num { white-space: nowrap; }

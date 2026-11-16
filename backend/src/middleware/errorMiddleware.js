@@ -1,4 +1,6 @@
 // Catches requests that didn't match any route
+const logger = require('../utils/logger');
+
 const notFound = (req, res, next) => {
   const error = new Error(`Route not found - ${req.originalUrl}`);
   res.status(404);
@@ -24,6 +26,10 @@ const errorHandler = (err, req, res, next) => {
     message = 'Internal Server Error';
   }
 
+  // Body larger than the route allows / not JSON (body-parser)
+  if (err.type === 'entity.too.large') { statusCode = 413; message = 'The file is too large to upload.'; }
+  if (err.type === 'entity.parse.failed') { statusCode = 400; message = 'The request body is not valid JSON.'; }
+
   // Prisma: unique constraint violation (e.g. duplicate email)
   if (err.code === 'P2002') {
     statusCode = 409;
@@ -37,6 +43,8 @@ const errorHandler = (err, req, res, next) => {
     message = 'Record not found';
   }
 
+  // server errors are logged (name, code, first line of the message, stack; never request bodies or headers) with the request id for correlation
+  if (statusCode >= 500) logger.error('request failed', { reqId: req.id, method: req.method, path: String(req.originalUrl || '').split('?')[0], status: statusCode, ...logger.describeError(err) });
   res.status(statusCode).json({
     success: false,
     message,

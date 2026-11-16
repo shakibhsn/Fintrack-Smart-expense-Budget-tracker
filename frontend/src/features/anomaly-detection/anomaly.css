@@ -1,0 +1,14 @@
+/* Unusual spending page */
+.ud-tiles { display: grid; gap: 12px; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.ud-tile { display: flex; align-items: center; gap: 12px; }
+.ud-groups { display: grid; gap: 28px; grid-template-columns: minmax(0, 1fr); }
+.ud-group-title { display: flex; align-items: center; gap: 10px; font-weight: 800; margin-bottom: 12px; }
+.ud-list { display: grid; gap: 12px; grid-template-columns: minmax(0, 1fr); }
+.ud-card { display: grid; gap: 12px; grid-template-columns: minmax(0, 1fr); }
+.ud-head { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 8px; }
+.ud-nums { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; text-align: center; }
+.ud-nums .tile { padding: 10px 6px; }
+.ud-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.ud-details summary { cursor: pointer; font-size: var(--text-xs); font-weight: 700; color: rgb(var(--brand-text)); width: fit-content; border-radius: var(--r-sm); }
+.ud-details div { display: grid; gap: 4px; margin-top: 8px; font-size: var(--text-xs); color: rgb(var(--mute)); grid-template-columns: minmax(0, 1fr); }
+@media (max-width: 900px) { .ud-tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); } }

@@ -2,7 +2,7 @@ const prisma = require('../config/prisma');
 const asyncHandler = require('../utils/asyncHandler');
 const httpError = require('../utils/httpError');
 const { serializeBudget } = require('../utils/serialize');
-const { getBudgetsWithSpending, getBudgetSummary, findOverlappingBudget } = require('../services/budgetService');
+const { getBudgetsWithSpending, getBudgetSummary, findOverlappingBudget, withBudgetLock } = require('../services/budgetService');
 const { checkBudgetByCategoryAndDate } = require('../services/notificationService');
 
 const findOwned = async (id, userId) => {
@@ -36,10 +36,11 @@ const getSummary = asyncHandler(async (req, res) => {
 // POST /api/budgets
 const createBudget = asyncHandler(async (req, res) => {
   const { category, startDate, endDate } = req.body;
-  const clash = await findOverlappingBudget(req.user.id, category, startDate, endDate);
-  if (clash) throw httpError(409, `A ${category} budget already covers part of this date range`);
-
-  const budget = await prisma.budget.create({ data: { ...req.body, userId: req.user.id } });
+  const budget = await withBudgetLock(req.user.id, category, async (tx) => {
+    const clash = await findOverlappingBudget(req.user.id, category, startDate, endDate, undefined, tx);
+    if (clash) throw httpError(409, `A ${category} budget already covers part of this date range`);
+    return tx.budget.create({ data: { ...req.body, userId: req.user.id } });
+  });
 
   // The category may already be near/over this limit from transactions that predate
   // the budget itself - check right away rather than waiting for the next transaction.
@@ -59,10 +60,11 @@ const updateBudget = asyncHandler(async (req, res) => {
   };
   if (next.endDate < next.startDate) throw httpError(400, 'End date must be on or after the start date');
 
-  const clash = await findOverlappingBudget(req.user.id, next.category, next.startDate, next.endDate, current.id);
-  if (clash) throw httpError(409, `A ${next.category} budget already covers part of this date range`);
-
-  const budget = await prisma.budget.update({ where: { id: current.id }, data: req.body });
+  const budget = await withBudgetLock(req.user.id, next.category, async (tx) => {
+    const clash = await findOverlappingBudget(req.user.id, next.category, next.startDate, next.endDate, current.id, tx);
+    if (clash) throw httpError(409, `A ${next.category} budget already covers part of this date range`);
+    return tx.budget.update({ where: { id: current.id }, data: req.body });
+  });
 
   // The new limit/category/range may already be near/over budget - check right away.
   await checkBudgetByCategoryAndDate(req.user.id, budget.category, budget.startDate);

@@ -1,0 +1,17 @@
+/* Analytics page */
+.an-controls { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 12px; }
+.an-controls .field { min-width: 150px; }
+.an-stats { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(min(210px, 100%), 1fr)); }
+.an-charts { display: grid; gap: 16px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.an-charts .span-2 { grid-column: span 2; }
+.an-split { display: grid; gap: 16px; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); }
+.an-legend { display: grid; gap: 8px; max-height: 190px; overflow-y: auto; font-size: var(--text-xs); margin-top: 12px; grid-template-columns: minmax(0, 1fr); }
+.an-legend-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.an-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.an-compare { display: grid; gap: 10px; list-style: none; margin: 0; padding: 0; font-size: var(--text-sm); grid-template-columns: minmax(0, 1fr); }
+.an-compare li { display: flex; gap: 8px; align-items: flex-start; }
+.an-top { display: grid; gap: 12px; grid-template-columns: minmax(0, 1fr); }
+@media (max-width: 900px) {
+  .an-charts, .an-split { grid-template-columns: minmax(0, 1fr); }
+  .an-charts .span-2 { grid-column: auto; }
+}
