@@ -71,8 +71,8 @@ export default {
     function drawSettings() {
       const s = status;
       render($('#ai-settings', ctx.outlet), card({ title: 'AI settings', body: html`
-        <label class="nc-pref"><input type="checkbox" data-set="enabled" ${s.enabled ? 'checked' : ''} ${s.serverEnabled ? '' : 'disabled'}><span>Enable the AI assistant</span></label>
-        <label class="nc-pref" style="margin-top:8px"><input type="checkbox" data-set="externalAi" ${s.externalAi ? 'checked' : ''} ${s.providerConfigured ? '' : 'disabled'}><span>Let an external AI model word the answers</span></label>
+        <label class="nc-pref"><input type="checkbox" class="switch" role="switch" data-set="enabled" ${s.enabled ? 'checked' : ''} ${s.serverEnabled ? '' : 'disabled'}><span>Enable the AI assistant</span></label>
+        <label class="nc-pref" style="margin-top:8px"><input type="checkbox" class="switch" role="switch" data-set="externalAi" ${s.externalAi ? 'checked' : ''} ${s.providerConfigured ? '' : 'disabled'}><span>Let an external AI model word the answers</span></label>
         ${s.providerConfigured ? '' : html`<p class="card-sub" style="margin-top:6px">No external AI service is set up on this server, so every answer is calculated by FinTrack itself. Nothing is sent anywhere.</p>`}
         <p class="card-sub" style="margin-top:8px">${s.privacy}</p>
         <p class="card-sub" style="margin-top:6px">Today: ${s.usage.requests} request${s.usage.requests === 1 ? '' : 's'}${s.providerConfigured ? `, ${s.usage.providerCalls} of ${s.usage.providerLimit} external AI calls` : ''}.</p>` }));

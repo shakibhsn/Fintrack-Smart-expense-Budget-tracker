@@ -114,11 +114,11 @@ export default {
         render(prefsBox, card({
           title: 'Notification preferences',
           subtitle: 'Choose which kinds of notifications are created. A category that is switched off stores nothing.',
-          body: html`<div class="nc-prefs">${CATEGORIES.map(([v, label, ic, key]) => html`<label class="nc-pref"><input type="checkbox" data-pref="${key}" ${p[key] ? 'checked' : ''}>${icon(ic)}<span>${label}</span></label>`)}</div>
+          body: html`<div class="nc-prefs">${CATEGORIES.map(([v, label, ic, key]) => html`<label class="nc-pref"><input type="checkbox" class="switch" role="switch" data-pref="${key}" ${p[key] ? 'checked' : ''}>${icon(ic)}<span>${label}</span></label>`)}</div>
             <div class="flex flex-wrap items-center gap-3" style="margin-top:16px"><label class="text-sm font-semibold" for="nc-days">Remind me about subscription renewals</label>
               <input class="input" id="nc-days" type="number" min="0" max="60" step="1" value="${p.renewalReminderDays}" style="width:90px"><span class="card-sub">days before (0 = only on the day). A subscription can set its own.</span></div>
             <div style="margin-top:18px;padding-top:14px;border-top:1px solid rgb(var(--line))"><h3 class="text-sm font-bold" style="margin:0 0 6px">E-mail</h3>${p.email.available
-    ? html`<label class="nc-pref" style="max-width:520px"><input type="checkbox" data-pref="emailEnabled" ${p.emailEnabled ? 'checked' : ''}>${icon('envelope')}<span>Also e-mail me a copy of notifications (to ${p.email.address})</span></label>
+    ? html`<label class="nc-pref" style="max-width:520px"><input type="checkbox" class="switch" role="switch" data-pref="emailEnabled" ${p.emailEnabled ? 'checked' : ''}>${icon('envelope')}<span>Also e-mail me a copy of notifications (to ${p.email.address})</span></label>
         <div class="flex flex-wrap items-center gap-3" style="margin-top:10px">${button({ label: 'Send a test e-mail', icon: 'paper-plane', variant: 'secondary', size: 'sm', action: 'test-email' })}<span class="card-sub">Only categories switched on above are e-mailed, at most ${p.email.hourlyCap} per hour. “E-mail sent” means the mail server accepted the message; it cannot guarantee inbox delivery.</span></div>`
     : html`<p class="card-sub">E-mail delivery is not set up on this server, so notifications are shown in the app only. (An administrator can enable it with SMTP settings.)</p>`}</div>`,
         }));

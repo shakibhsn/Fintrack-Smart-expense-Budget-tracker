@@ -5,3 +5,7 @@
 //
 // With no value the app talks to http://localhost:5000/api (local development).
 window.FINTRACK_CONFIG = window.FINTRACK_CONFIG || {};
+
+if (!window.FINTRACK_CONFIG.apiBaseUrl && /\.ngrok-free\.(?:dev|app)$/i.test(window.location.hostname)) {
+  window.FINTRACK_CONFIG.apiBaseUrl = `${window.location.origin}/api`;
+}

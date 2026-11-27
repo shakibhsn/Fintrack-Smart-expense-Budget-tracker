@@ -64,10 +64,10 @@ export default {
           const s = d.summary; const m = d.monthlyIncomeExpense; const cur = m[m.length - 1]; const prev = m[m.length - 2];
           const showTrend = period === 'month' && cur && prev;
           render(el, html`<div class="db-stats">
-            ${statCard({ label: 'Balance', value: money(s.balance), tone: s.balance < 0 ? 'text-expense' : '', sub: 'Income minus expenses' })}
-            ${statCard({ label: 'Income', value: money(s.totalIncome), tone: 'text-income', sub: showTrend ? trendBadge(pct(cur.income, prev.income), true) : '' })}
-            ${statCard({ label: 'Expenses', value: money(s.totalExpense), tone: 'text-expense', sub: showTrend ? trendBadge(pct(cur.expense, prev.expense), false) : '' })}
-            ${statCard({ label: 'Savings rate', value: s.savingsRate === null || s.savingsRate === undefined ? 'N/A' : `${s.savingsRate}%`, sub: s.totalIncome > 0 ? 'Of income kept' : 'No income this period' })}
+            ${statCard({ icon: 'wallet', iconTone: 'is-brand', label: 'Balance', value: money(s.balance), tone: s.balance < 0 ? 'text-expense' : '', sub: 'Income minus expenses' })}
+            ${statCard({ icon: 'arrow-down', iconTone: 'is-income', label: 'Income', value: money(s.totalIncome), tone: 'text-income', sub: showTrend ? trendBadge(pct(cur.income, prev.income), true) : '' })}
+            ${statCard({ icon: 'arrow-up', iconTone: 'is-expense', label: 'Expenses', value: money(s.totalExpense), tone: 'text-expense', sub: showTrend ? trendBadge(pct(cur.expense, prev.expense), false) : '' })}
+            ${statCard({ icon: 'piggy-bank', iconTone: 'is-income', label: 'Savings rate', value: s.savingsRate === null || s.savingsRate === undefined ? 'N/A' : `${s.savingsRate}%`, sub: s.totalIncome > 0 ? 'Of income kept' : 'No income this period' })}
           </div>`);
         },
       }),

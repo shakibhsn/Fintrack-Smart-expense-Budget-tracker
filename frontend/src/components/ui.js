@@ -79,4 +79,4 @@ export const pageHeader = ({ title, subtitle, actions }) => html`<header class="
 export const statTile = ({ label, value, sub, tone = '' }) => html`<div class="tile"><div class="eyebrow">${label}</div><div class="stat-value ${tone}">${value}</div>${sub ? html`<div class="card-sub">${sub}</div>` : ''}</div>`;
 
 // A single-metric card (label, big number, optional caption). Use this instead of nesting a tile inside a card.
-export const statCard = ({ label, value, sub, tone = '', id }) => html`<div class="card card-pad stat"${attrs({ id })}><div class="stat-label">${label}</div><div class="stat-value ${tone}">${value}</div>${sub ? html`<div class="card-sub">${sub}</div>` : ''}</div>`;
+export const statCard = ({ label, value, sub, tone = '', id, icon: ic, iconTone = '' }) => html`<div class="card card-pad stat"${attrs({ id })}><div class="stat-top"><div class="stat-label">${label}</div>${ic ? html`<span class="stat-icon ${iconTone}">${icon(ic)}</span>` : ''}</div><div class="stat-value ${tone}">${value}</div>${sub ? html`<div class="card-sub">${sub}</div>` : ''}</div>`;

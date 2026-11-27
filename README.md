@@ -26,9 +26,17 @@ Browser (static modules) → REST API (Express) → Prisma ORM → PostgreSQL
 
 ## Screenshots
 
-| Dashboard (dark, desktop) | Dashboard (light, phone) | AI assistant (dark, phone) |
+| Dashboard (light) | Dashboard (dark) |
+|---|---|
+| ![Dashboard light](docs/screenshots/dashboard-light-desktop.png) | ![Dashboard dark](docs/screenshots/dashboard-dark-desktop.png) |
+
+| Transactions (light) | Budgets (dark) |
+|---|---|
+| ![Transactions light](docs/screenshots/transactions-light-desktop.png) | ![Budgets dark](docs/screenshots/budgets-dark-desktop.png) |
+
+| Dashboard (light, phone) | Dashboard (dark, phone) | AI assistant (dark, phone) |
 |---|---|---|
-| ![Dashboard dark](docs/screenshots/dashboard-dark-desktop.png) | ![Dashboard light phone](docs/screenshots/dashboard-light-mobile.png) | ![AI assistant](docs/screenshots/ai-dark-mobile.png) |
+| ![Dashboard light phone](docs/screenshots/dashboard-light-mobile.png) | ![Dashboard dark phone](docs/screenshots/dashboard-dark-mobile.png) | ![AI assistant](docs/screenshots/ai-dark-mobile.png) |
 
 Screenshots show data from a throw-away test account.
 
@@ -216,8 +224,11 @@ as a `file://` path) so ES modules load and the browser's CORS check matches `CL
 cd frontend
 npm install
 npm run build
-npx serve -l 5500
+npm run serve
 ```
+
+The frontend server forwards `/api` to the backend on port 5000. For a public ngrok demo, run
+`ngrok http 5500`; one tunnel then serves both the frontend and API.
 
 Open `http://localhost:5500/`, create an account, and you're in. Pages are addressed with hash
 routes (`#/dashboard`, `#/transactions`, `#/forecast`, …) so refresh and the Back button work on any static server.

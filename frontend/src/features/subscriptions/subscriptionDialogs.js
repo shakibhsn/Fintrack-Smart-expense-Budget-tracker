@@ -40,7 +40,7 @@ export function openSubscriptionForm({ subscription = null, onSaved }) {
         ${input({ id: 'sb-reminder', label: 'Remind me (days before)', type: 'number', value: s && s.reminderDays !== null && s.reminderDays !== undefined ? s.reminderDays : '', optional: true, hint: 'Empty = your default in notification preferences.', attrs: { min: 0, max: 60 } })}
       </div>
       ${textarea({ id: 'sb-notes', label: 'Notes', value: s && s.notes ? s.notes : '', maxlength: 500, optional: true })}
-      <label class="flex items-start gap-2 text-sm" style="padding:12px;border-radius:var(--r-md);background:rgb(var(--surface-2))"><input type="checkbox" id="sb-auto" style="margin-top:3px" ${s && s.autoRecord ? 'checked' : ''}><span><b>Record each payment as an expense automatically</b> on its renewal date. Off by default: a renewal is only recorded when you confirm it. Only for your account currency.</span></label>
+      <label class="flex items-start gap-2 text-sm" style="padding:12px;border-radius:var(--r-md);background:rgb(var(--surface-2))"><input type="checkbox" class="switch" role="switch" id="sb-auto" style="margin-top:3px" ${s && s.autoRecord ? 'checked' : ''}><span><b>Record each payment as an expense automatically</b> on its renewal date. Off by default: a renewal is only recorded when you confirm it. Only for your account currency.</span></label>
       <p class="field-error" id="sb-form-error" role="alert" hidden></p>
     </form>`,
     footer: html`<button type="button" class="btn btn-secondary" data-modal-close>Cancel</button><button type="submit" class="btn btn-primary" form="sb-form" id="sb-submit">${s ? 'Save changes' : 'Add subscription'}</button>`,

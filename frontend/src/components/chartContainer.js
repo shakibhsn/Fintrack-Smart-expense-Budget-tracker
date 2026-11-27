@@ -11,17 +11,17 @@ import { on as onEvent } from '../core/events.js';
 // Palette derived from the brand colours. Green carries the "good / income / primary" meaning; categories
 // beyond five greens fall back to calm neutral hues so they stay distinguishable.
 // Order alternates dark/light so neighbouring slices and bars stay distinguishable.
-export const CHART_COLORS = ['#228B22', '#A9DFBF', '#1E5631', '#4CAF50', '#2E8B57', '#C58A1B', '#5B7B8C', '#B25F7A', '#7C6FB0', '#8A9A5B'];
+export const CHART_COLORS = ['#10B981', '#0EA5E9', '#F59E0B', '#F43F5E', '#8B5CF6', '#14B8A6', '#64748B', '#EC4899', '#84CC16', '#F97316'];
 export function palette() {
   const dark = currentTheme() === 'dark';
   return {
-    income: dark ? '#4CAF50' : '#228B22',
-    expense: dark ? '#F87171' : '#C93A3A',
-    savings: dark ? '#A9DFBF' : '#2E8B57',
-    estimate: dark ? '#A9DFBF' : '#4CAF50',
-    text: dark ? '#9CB2A5' : '#54685D',
-    grid: dark ? 'rgba(156,178,165,0.16)' : 'rgba(84,104,93,0.14)',
-    surface: dark ? '#111D16' : '#FFFFFF',
+    income: dark ? '#34D399' : '#059669',
+    expense: dark ? '#FB7185' : '#E11D48',
+    savings: dark ? '#38BDF8' : '#0284C7',
+    estimate: dark ? '#6EE7B7' : '#10B981',
+    text: dark ? '#A1A1AA' : '#475569',
+    grid: dark ? 'rgba(161,161,170,0.14)' : 'rgba(71,85,105,0.12)',
+    surface: dark ? '#18181B' : '#FFFFFF',
   };
 }
 

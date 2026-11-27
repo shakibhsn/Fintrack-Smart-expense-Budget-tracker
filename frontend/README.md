@@ -21,11 +21,13 @@ cd backend && npm run dev
 Serve the frontend from `frontend/` on the origin the backend allows (`CLIENT_URL`, default `http://localhost:5500`):
 
 ```bash
-npx serve -l 5500          # or the VS Code "Live Server" extension on port 5500
+cd frontend
+npm run serve
 ```
 
 Open `http://localhost:5500/` (redirects to the login page, or straight into the app when you are signed in).
 It must be served over HTTP (not `file://`): ES modules and CORS both require it.
+The development server forwards `/api` to the backend on port 5000. This also lets a single ngrok tunnel to port 5500 serve both frontend and API; on an `*.ngrok-free.dev` or `*.ngrok-free.app` host, the frontend automatically uses that same-origin API path. Keep the backend running, then start `ngrok http 5500`.
 To point at another API without editing code, define `window.FINTRACK_CONFIG = { apiBaseUrl: '…' }` before `src/main.js` loads.
 
 ## Architecture
