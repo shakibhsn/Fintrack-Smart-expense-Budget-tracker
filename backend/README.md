@@ -548,7 +548,7 @@ All **additive** (new enums/tables and nullable columns; no existing row is chan
 | `7_notification_center` | `NotificationCategory`, `Notification.category/dedupeKey/relatedType/relatedId/link/readAt` with `UNIQUE(userId, dedupeKey)` (existing rows are back-filled with a category and a unique legacy key), `NotificationPreference` |
 | `8_report_snapshots` | `ReportSnapshot` with `UNIQUE(userId, fingerprint)` |
 | `9_import_export` | `ImportBatch` (+ `ImportKind`, `ImportStatus`), nullable `Transaction.importBatchId` |
-| `10_email_notifications` | `NotificationPreference.emailEnabled` (default false), `Notification.emailStatus` / `emailedAt` (both nullable) |
+| `9a_email_notifications` | `NotificationPreference.emailEnabled` (default false), `Notification.emailStatus` / `emailedAt` (both nullable) |
 
 **Safe upgrade plan:** (1) `pg_dump` backup; (2) stop the server (Windows locks the Prisma engine file); (3) `npx prisma migrate deploy` (applies 6–10 in order);
 (4) `npx prisma generate`; (5) `npm install` (adds `pdfkit`, `exceljs`, `nodemailer` and the Noto font packages); (6) start the server. Rollback = restore the backup (all new columns are nullable).
@@ -590,7 +590,7 @@ question -> rule-based intent (services/ai/intent.js) -> whitelisted TOOL + zod-
 - **Usage controls:** `AiSetting.enabled` (per user) and `AI_ENABLED=false` (whole server); per-user rate limit `AI_RATE_LIMIT_MAX` (20/min); daily external-call cap `AI_DAILY_PROVIDER_LIMIT` (50, then answers continue without the model); `AiUsageLog` stores tool, source, status and latency
   **only** (no question text, no figures). No conversation is stored server-side: the history lives in the page's memory and disappears when you leave. The page shows the disclaimer: educational, not professional financial advice.
 
-Migration `11_ai_assistant` (additive): `AiSetting`, `AiUsageLog`, `AiDismissal`.
+Migration `9b_ai_assistant` (additive): `AiSetting`, `AiUsageLog`, `AiDismissal`.
 
 | Variable | Default | Purpose |
 |---|---|---|
@@ -603,8 +603,8 @@ Migration `11_ai_assistant` (additive): `AiSetting`, `AiUsageLog`, `AiDismissal`
 
 | Migration | Adds |
 |---|---|
-| `10_email_notifications` | `NotificationPreference.emailEnabled` (default false), `Notification.emailStatus` / `emailedAt` |
-| `11_ai_assistant` | `AiSetting`, `AiUsageLog` (tool/source/status/latency only), `AiDismissal` |
+| `9a_email_notifications` | `NotificationPreference.emailEnabled` (default false), `Notification.emailStatus` / `emailedAt` |
+| `9b_ai_assistant` | `AiSetting`, `AiUsageLog` (tool/source/status/latency only), `AiDismissal` |
 
 ## Phase 19 - security hardening and data integrity
 
